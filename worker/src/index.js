@@ -97,7 +97,7 @@ async function think(env, b) {
 }
 
 async function draw(env, prompt, seed) {
-  const out = await env.AI.run(IMAGE_MODEL, { prompt: clip(prompt, 1800) + " " + STYLE, steps: 6, seed: Number(seed) || Math.floor(Math.random() * 1e6) });
+  const out = await env.AI.run(IMAGE_MODEL, { prompt: clip(prompt, 1800) + " " + STYLE, steps: 6 });
   const bin = Uint8Array.from(atob(out.image), (c) => c.charCodeAt(0));
   return bin;
 }

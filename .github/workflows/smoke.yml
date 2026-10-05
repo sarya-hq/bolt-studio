@@ -17,7 +17,7 @@ jobs:
           P=$(python3 -c "import json;print(json.load(open('think.json')).get('image_prompt',''))")
           echo "== draw"
           python3 -c "import json,sys;print(json.dumps({'prompt':sys.argv[1]}))" "$P" > draw.json
-          curl -sS -m 60 -H "$O" -H "Content-Type: application/json" -X POST "$U/api/draw" -d @draw.json -o pic.jpg -w "status %{http_code} bytes %{size_download} type %{content_type}\n"; head -c 400 pic.jpg | grep -a "error" || true
+          curl -sS -m 60 -H "$O" -H "Content-Type: application/json" -X POST "$U/api/draw" -d @draw.json -o pic.jpg -w "status %{http_code} bytes %{size_download} type %{content_type}\n"; head -c 400 pic.jpg | grep -a "error" && exit 1; file pic.jpg
           echo "== speak"
           curl -sS -m 30 -H "$O" -H "Content-Type: application/json" -X POST "$U/api/speak" -d '{"text":"שלום, אני בולט","lang":"he"}' -o s.mp3 -w "status %{http_code} bytes %{size_download} type %{content_type}\n"
           echo "== think (English, boy, 10, fix)"
