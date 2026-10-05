@@ -46,6 +46,8 @@ html[lang="he"] .over{letter-spacing:0}
 .art img{display:block;width:100%;height:auto}
 .art.night{background:var(--night)}
 .art .tag{position:absolute;top:14px;inset-inline-start:14px;background:rgba(14,20,38,.62);color:#fff;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.art.crowd img{transform:scale(1.28) translateY(6%);filter:brightness(.85);transition:transform .8s ease}
+.art.crowd:after{content:"";position:absolute;inset:auto 0 0 0;height:26%;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cg fill='%23070A14'%3E%3Ccircle cx='30' cy='45' r='22'/%3E%3Crect x='5' y='60' width='50' height='40' rx='20'/%3E%3Ccircle cx='110' cy='38' r='25'/%3E%3Crect x='80' y='56' width='60' height='44' rx='22'/%3E%3Ccircle cx='200' cy='48' r='20'/%3E%3Crect x='176' y='62' width='48' height='38' rx='20'/%3E%3Ccircle cx='285' cy='36' r='26'/%3E%3Crect x='252' y='56' width='66' height='44' rx='24'/%3E%3Ccircle cx='370' cy='46' r='22'/%3E%3Crect x='342' y='62' width='56' height='38' rx='20'/%3E%3C/g%3E%3C/svg%3E") bottom/100% 100% no-repeat}
 .reveal img{animation:reveal 1.1s cubic-bezier(.2,.8,.2,1) both}
 @keyframes reveal{from{opacity:0;filter:blur(14px) brightness(.6);transform:scale(1.04)}to{opacity:1;filter:none;transform:none}}
 /* Bolt line */
@@ -159,28 +161,32 @@ var VOICE={};
 var UI={};
 var HE={},EN={};function loadVoice(f,cb){try{fetch("assets/"+f,{cache:"no-cache"}).then(function(r){return r.ok?r.json():{}}).then(function(j){cb(j||{})}).catch(function(){})}catch(e){}}
 loadVoice("en-voice.json",function(j){EN=j});loadVoice("he-voice.json",function(j){HE=j});
-var VERSION="9";
-var LINES_EN={"intro": "Hi, I'm Bolt, your AI builder. The city's night parade is in three days, and you're the creative director. I build fast, but I make mistakes. You set the rules, I build, and you check my work.", "back": "Welcome back, director. Ready for another parade?", "how": "Before I start: do you want to give me a brief, or should I just guess?", "guess": "Here's my guess. A box with balloons. Is that what you had in mind?", "guessAfter": "That's what happens when an AI guesses. Give me a clear brief, and I'll build what you actually want.", "brief": "Pick your float, give it a name, and choose your rules. The city already has one rule: the float must be easy to see at night.", "build": "Brief received. Building your float now.", "check": "Here it is, at night on the parade street. Check it against every rule. Tap yes or no for each one.", "checkWrong": "Look at the picture again. If you were standing in the crowd, could you see it?", "checkRight": "You caught it. The rule says easy to see at night, and it isn't. How should I fix it?", "vague1": "I made it shinier. But look, it's still dark. I didn't know what you meant.", "vague2": "I added more lights. But I put them underneath again. It's still hard to see. Tell me exactly where they go.", "fixed": "Done. The lights face outward now, on every side. Drag the slider to compare before and after.", "fireworks": "One more decision. I can add fireworks on top. They're exciting, but loud bangs might scare little kids in the crowd. Your call.", "why": "Why did you decide that?", "finale": "The parade is ready, and it's yours. Great directing.", "q1": "Quick question. How did that mission feel?", "q2": "Which part was the hardest?", "thanks": "Thanks for telling me. See you at the next parade."};
+var VERSION="10";
+var LINES_EN={"intro": "Hi, I'm Bolt. I'm a computer program, not a person, and I don't have feelings. I build fast, but my work can look great and still be wrong. You're the director. You set the rules, I build, and you check.", "back": "Welcome back, director. Ready for another parade?", "how": "Before I start: do you want to give me a brief, or should I just guess?", "guess": "Here's my guess. A box with balloons. Is that what you had in mind?", "guessAfter": "Guessing sometimes works, but usually it misses what you wanted. A clear brief gives me a much better chance. Even then, you still need to check my work.", "brief": "Pick your float, give it a name, and choose your rules. The city already has one rule: the float must be easy to see at night.", "build": "Brief received. Building your float now.", "check": "Here it is, at night on the parade street. Check it against every rule. Tap yes or no for each one.", "checkRight": "You caught it. The rule says easy to see at night, and it isn't. How should I fix it?", "vague1": "Better how? I didn't know which part you meant, so I just made it shinier. It's still dark.", "vague2": "I added more lights. But I put them underneath again. It's still hard to see. Tell me exactly where they go.", "fixed": "Done. The lights face outward now, on every side. Drag the slider to compare before and after.", "fireworks": "One more decision. I can add fireworks on top. They're exciting, but loud bangs might scare little kids in the crowd. Your call.", "why": "Why did you decide that?", "finale": "The parade is ready. You checked the rules, caught the problem, and told me exactly what to fix. That's how you lead an AI.", "q1": "Quick question. How did that mission feel?", "q2": "Which part was the hardest?", "thanks": "Thanks for telling me. See you at the next parade.", "predict": "Before I build: which rule do you think I might get wrong?", "crowd": "Here's the view from the crowd. Take another look, and change any answer you want.", "sure": "How sure are you that you found every problem?", "consequence": "Parade night. The crowd couldn't see your float in the dark, so the city rule was broken. Let's fix it. How should I change it?"};
 var A="assets/";
 var app=document.getElementById("app");
 
 var LINES_HE={
-intro:"היי, אני בולט, הבונה שלכם עם בינה מלאכותית. מצעד הלילה של העיר יוצא בעוד שלושה ימים, ואתם המנהלים הקריאייטיביים. אני בונה מהר, אבל אני גם טועה. אתם קובעים את הכללים, אני בונה, ואתם בודקים.",
+consequence:"ערב המצעד. הקהל לא ראה את הקרון בחושך, אז הכלל של העירייה לא נשמר. בואו נתקן. איך לשנות אותו?",
+sure:"כמה אתם בטוחים שמצאתם את כל הבעיות?",
+crowd:"ככה רואים את זה מהקהל. תסתכלו שוב, ותשנו כל תשובה שתרצו.",
+predict:"לפני שאני בונה: איזה כלל לדעתכם אני עלולה לפספס?",
+intro:"היי, אני בולט. אני תוכנת מחשב, לא בן אדם, ואין לי רגשות. אני בונה מהר, אבל העבודה שלי יכולה להיראות מעולה ועדיין להיות לא נכונה. אתם המנהלים: אתם קובעים את הכללים, אני בונה, ואתם בודקים.",
 back:"ברוכים השבים! מוכנים למצעד נוסף?",
 how:"לפני שאני מתחילה: רוצים לתת לי הוראות, או שאני פשוט אנחש?",
 guess:"הנה הניחוש שלי: קופסה עם בלונים. זה מה שדמיינתם?",
-guessAfter:"זה מה שקורה כשבינה מלאכותית מנחשת. תנו לי הוראות ברורות, ואבנה את מה שאתם באמת רוצים.",
+guessAfter:"לפעמים ניחוש מצליח, אבל בדרך כלל הוא מפספס את מה שרציתם. הוראות ברורות נותנות לי סיכוי הרבה יותר טוב. וגם אז, צריך לבדוק את העבודה שלי.",
 brief:"בחרו קרון, תנו לו שם ובחרו כללים. לעירייה כבר יש כלל אחד: את הקרון חייבים לראות בקלות בלילה.",
 build:"קיבלתי את ההוראות. בונה את הקרון עכשיו.",
 check:"הנה הוא, בלילה ברחוב המצעד. בדקו אותו מול כל כלל. לחצו כן או לא ליד כל אחד.",
 checkWrong:"תסתכלו שוב על התמונה. אם הייתם עומדים בקהל, הייתם רואים אותו?",
 checkRight:"תפסתם אותי. הכלל אומר שרואים אותו בקלות בלילה, ולא רואים. איך לתקן?",
-vague1:"עשיתי אותו מבריק יותר. אבל תראו, הוא עדיין חשוך. לא ידעתי למה התכוונתם.",
+vague1:"יותר טוב איך? לא ידעתי לאיזה חלק התכוונתם, אז רק הוספתי ברק. הוא עדיין חשוך.",
 vague2:"הוספתי עוד אורות. אבל שוב שמתי אותם מתחת. עדיין קשה לראות אותו. תגידו לי בדיוק איפה לשים אותם.",
 fixed:"סיימתי. עכשיו האורות פונים החוצה, מכל הצדדים. גררו את המחוון כדי להשוות לפני ואחרי.",
 fireworks:"עוד החלטה אחת. אני יכולה להוסיף זיקוקים מעל הקרון. הם מרגשים, אבל הפיצוצים הרועשים עלולים להפחיד ילדים קטנים בקהל. ההחלטה שלכם.",
 why:"למה החלטתם ככה?",
-finale:"המצעד מוכן, והוא שלכם. ניהול מצוין!",
+finale:"המצעד מוכן. בדקתם את הכללים, תפסתם את הבעיה ואמרתם לי בדיוק מה לתקן. ככה מובילים בינה מלאכותית.",
 q1:"שאלה קטנה: איך הייתה המשימה?",
 q2:"איזה חלק היה הכי קשה?",
 thanks:"תודה שסיפרתם לי. נתראה במצעד הבא."
@@ -213,7 +219,7 @@ en:{over:"Mission 1 · The Night Parade",hero:"Lead the AI.",heroSub:"You set th
  oBrief:"Wrote a brief straight away",oGuess:"Let Bolt guess first, then wrote a brief",oRules:"Own rules chosen: {r}",
  oCheck1:"Spotted the night problem on the first check",oCheckN:"Spotted the night problem after {n} checks",
  oFix1:"Gave the exact fix on the first try",oFixN:"Tried {n} vague fix(es) before the exact one",oFw:"Fireworks: {v}",fwYes:"added",fwNo:"not added",
- replay:"Hear it again",sound:"Sound",readAll:"Read this to me",talk:"Talk instead of typing",autoRead:"Bolt reads aloud automatically",autoReadSub:"Every screen is read aloud as it opens. Speaker buttons always work, even when this is off.",on:"On",off:"Off"},
+ replay:"Hear it again",notSure:"Hard to tell",veryS:"Very sure",littleS:"A little sure",notS:"Not sure",crowdTag:"View from the crowd",fixIt:"Fix it",pqTitle:"Grown-up: ask these three questions",pq:["Which rule did you check first?","How did you know Bolt got it wrong?","Where could a real AI make a mistake like this?"],oPredict:"Predicted Bolt might miss: {r}",oSelf:"Found the night problem without hints",oCrowd:"Found the night problem after the crowd view",oParade:"Approved the dark float; saw the problem at the parade",oSure:"Confidence after checking: {v}",sound:"Sound",readAll:"Read this to me",talk:"Talk instead of typing",autoRead:"Bolt reads aloud automatically",autoReadSub:"Every screen is read aloud as it opens. Speaker buttons always work, even when this is off.",on:"On",off:"Off"},
 he:{over:"משימה 1 · מצעד הלילה",hero:"מובילים את ה-AI.",heroSub:"אתם קובעים את הכללים. בולט בונה. אתם בודקים.",nameQ:"שם המנהל",namePh:"כתבו את השם",start:"מתחילים משימה",parentsLink:"להורים",next:"הבא",
  giveBrief:"לתת לבולט הוראות",giveBriefSub:"אתם מחליטים מה ייבנה",letGuess:"שבולט תנחש",letGuessSub:"נראה מה יקרה",
  notWanted:"זה לא מה שרציתי",isWanted:"בערך",writeBrief:"לכתוב הוראות",
@@ -241,7 +247,7 @@ he:{over:"משימה 1 · מצעד הלילה",hero:"מובילים את ה-AI."
  oBrief:"כתיבת הוראות מההתחלה",oGuess:"קודם נתנו לבולט לנחש, ואז הוראות",oRules:"כללים שנבחרו: {r}",
  oCheck1:"זיהוי בעיית הלילה כבר בבדיקה הראשונה",oCheckN:"זיהוי בעיית הלילה אחרי {n} בדיקות",
  oFix1:"תיקון מדויק כבר בניסיון הראשון",oFixN:"{n} ניסיונות תיקון כלליים לפני המדויק",oFw:"זיקוקים: {v}",fwYes:"נוספו",fwNo:"לא נוספו",
- replay:"לשמוע שוב",sound:"צליל",readAll:"להקריא לי",talk:"לדבר במקום להקליד",autoRead:"בולט מקריא אוטומטית",autoReadSub:"כל מסך מוקרא בקול כשהוא נפתח. כפתורי הרמקול עובדים תמיד, גם כשזה כבוי.",on:"פועל",off:"כבוי"}
+ replay:"לשמוע שוב",notSure:"קשה לדעת",veryS:"לגמרי",littleS:"די",notS:"לא ממש",crowdTag:"המבט מהקהל",fixIt:"לתקן",pqTitle:"להורים: שאלו את שלוש השאלות האלה",pq:["איזה כלל בדקת קודם?","איך ידעת שבולט טעתה?","איפה בינה מלאכותית אמיתית יכולה לטעות ככה?"],oPredict:"ניחוש מראש של מה שבולט תפספס: {r}",oSelf:"זיהוי בעיית הלילה בלי רמזים",oCrowd:"זיהוי בעיית הלילה אחרי המבט מהקהל",oParade:"אישור הקרון החשוך; הבעיה התגלתה במצעד",oSure:"ביטחון אחרי הבדיקה: {v}",sound:"צליל",readAll:"להקריא לי",talk:"לדבר במקום להקליד",autoRead:"בולט מקריא אוטומטית",autoReadSub:"כל מסך מוקרא בקול כשהוא נפתח. כפתורי הרמקול עובדים תמיד, גם כשזה כבוי.",on:"פועל",off:"כבוי"}
 };
 
 var FLOATS=["fox","owl","whale"],NAMES=["Ember","Luna","Nova"],OWN=["face","wheels","gate"];
@@ -409,16 +415,21 @@ function brief(){
   onAll("[data-float]",function(el){P.float=el.getAttribute("data-float");speakText(T[S.lang].animals[P.float]);app.querySelectorAll("[data-float]").forEach(function(b){b.setAttribute("aria-pressed",b===el)});refresh()});
   onAll("[data-name]",function(el){P.name=el.getAttribute("data-name");speakText(T[S.lang].names[P.name]);app.querySelectorAll("[data-name]").forEach(function(b){b.setAttribute("aria-pressed",b===el)});refresh()});
   onAll("[data-rule]",function(el){var r=el.getAttribute("data-rule"),i=P.own.indexOf(r);if(i<0)speakText(t("rules")[r]);if(i>=0)P.own.splice(i,1);else P.own.push(r);el.setAttribute("aria-pressed",i<0);refresh()});
-  on("send",build);
+  on("send",predict);
+}
+function predict(){
+  var rules=["night"].concat(S.plan.own);
+  render(bar(t("over"))+art("bolt")+boltLine("predict")+'<div class="stack">'+rules.concat(["?"]).map(function(r){var x=r==="?"?t("notSure"):t("rules")[r];return '<button class="choice" data-p="'+r+'"><span>'+esc(x)+'</span>'+hear(x)+'</button>'}).join("")+'</div>',"predict",predict);
+  onAll("[data-p]",function(el){S.log.predict=el.getAttribute("data-p");build()});
 }
 function build(){
-  S.log.rules=S.plan.own.slice();S.answersCheck={};
+  S.log.rules=S.plan.own.slice();S.answersCheck={};S.crowdSeen=false;
   render('<div class="building"><img src="'+img("bolt-face")+'" alt=""><p style="font-weight:600;font-size:18px">'+t("building")+'…</p><div class="progress"><i></i></div></div>',"build",build,true);
   setTimeout(check,2600);
 }
 function check(){
   var rules=["night"].concat(S.plan.own),A2=S.answersCheck||{};
-  render(bar(t("checking"))+art(S.plan.float+"-dark","night reveal",floatName())+boltLine("check")+
+  render(bar(t("checking"))+art(S.plan.float+"-dark","night"+(S.crowdSeen?" crowd":" reveal"),S.crowdSeen?t("crowdTag"):floatName())+boltLine(S.crowdSeen?"crowd":"check")+
     '<div class="rules">'+rules.map(function(r){return '<div class="rule" data-r="'+r+'"><span class="t">'+(r==="night"?'<small>'+t("cityTag")+'</small>':'')+t("rules")[r]+'</span>'+hear(t("rules")[r])+'<span class="yn"><button data-a="y" aria-pressed="'+(A2[r]==="y")+'">'+t("yes")+'</button><button data-a="n" aria-pressed="'+(A2[r]==="n")+'">'+t("no")+'</button></span></div>'}).join("")+'</div>'+
     '<p class="note" id="note"></p><button class="btn primary" id="done">'+t("doneChecking")+'</button>',S.screen===check?null:"check",check);
   onAll(".yn button",function(el){var row=el.closest(".rule"),r=row.getAttribute("data-r");A2[r]=el.getAttribute("data-a");row.classList.remove("again");row.querySelectorAll("button").forEach(function(b){b.setAttribute("aria-pressed",b===el)});speakText(el.textContent)});
@@ -426,14 +437,24 @@ function check(){
     var note=document.getElementById("note");
     for(var i=0;i<rules.length;i++)if(!A2[rules[i]]){note.textContent=t("answerAll");return}
     S.log.checks++;
-    if(A2.night!=="n"){app.querySelector('.rule[data-r="night"]').classList.add("again");note.textContent=t("recheck");setLine("checkWrong");return}
-    var bad=rules.filter(function(r){return r!=="night"&&A2[r]!=="y"});
-    if(bad.length){bad.forEach(function(r){app.querySelector('.rule[data-r="'+r+'"]').classList.add("again")});note.textContent=t("recheck");return}
-    fix(null);
+    if(A2.night!=="n"){
+      if(!S.crowdSeen){S.crowdSeen=true;S.screen=null;check();return}
+      S.log.caught="parade";consequence();return}
+    S.log.caught=S.crowdSeen?"crowd":"self";
+    sure();
   });
 }
+function sure(){
+  var o=[["veryS","v"],["littleS","l"],["notS","n"]];
+  render(bar(t("checking"))+boltLine("sure")+'<div class="stack">'+o.map(function(x){return '<button class="choice" data-v="'+x[1]+'"><span>'+esc(t(x[0]))+'</span>'+hear(t(x[0]))+'</button>'}).join("")+'</div>',"sure",sure);
+  onAll("[data-v]",function(el){S.log.sure=el.getAttribute("data-v");fix(null)});
+}
+function consequence(){
+  render(bar(t("checking"))+art(S.plan.float+"-dark","night crowd reveal",t("crowdTag"))+boltLine("consequence")+'<button class="btn primary" id="fx">'+t("fixIt")+'</button>',"consequence",consequence);
+  on("fx",function(){fix("fixAsk")});
+}
 function fix(last){
-  var k=last||"checkRight";
+  var k=last||"checkRight";if(k==="fixAsk")k=S.log.caught==="parade"?"consequence":"checkRight";
   if(!S.fixOrder)S.fixOrder=["v1","v2","x"].sort(function(){return Math.random()-.5});
   render(bar(t("checking"))+art(S.plan.float+"-dark","night",floatName())+boltLine(k)+
     '<div class="stack">'+S.fixOrder.map(function(v){return '<button class="choice" data-v="'+v+'"><span>'+esc(t(v))+'</span>'+hear(t(v))+'</button>'}).join("")+'</div>',k,function(){fix(last)});
@@ -470,7 +491,8 @@ function finale(){
   render('<div class="finale" style="display:contents">'+art("finale","reveal")+'</div>'+
     '<span class="stamp">'+I.check+esc(f(t("approved"),{n:S.director||"—"}))+'</span>'+
     '<div class="headrow"><h2>'+esc(f(t("inParade"),{f:fn}))+'</h2>'+hear(f(t("inParade"),{f:fn}))+'</div>'+boltLine("finale")+
-    '<div class="card"><div class="lblrow" style="justify-content:space-between"><h3>'+t("decisions")+'</h3>'+hear([t("decisions"),f(t("dBrief"),{a:animal().toLowerCase(),f:fn,k:L.rules.length+1}),t("dCaught"),L.vague?f(t("dFixVague"),{v:L.vague}):t("dFixExact"),(L.fw==="yes"?t("dFwYes"):t("dFwNo"))])+'</div><ul><li>'+esc(f(t("dBrief"),{a:animal().toLowerCase(),f:fn,k:L.rules.length+1}))+'</li><li>'+esc(t("dCaught"))+'</li><li>'+esc(L.vague?(L.vague===1&&S.lang==="he"?"מצאת את התיקון המדויק אחרי ניסיון כללי אחד.":f(t("dFixVague"),{v:L.vague})):t("dFixExact"))+'</li><li>'+esc((L.fw==="yes"?t("dFwYes"):t("dFwNo"))+" "+L.reason)+'</li></ul></div>'+
+    '<div class="card"><div class="lblrow" style="justify-content:space-between"><h3>'+t("decisions")+'</h3>'+hear([t("decisions"),f(t("dBrief"),{a:animal().toLowerCase(),f:fn,k:L.rules.length+1}),(L.caught==="parade"?t("oParade"):t("dCaught")),L.vague?f(t("dFixVague"),{v:L.vague}):t("dFixExact"),(L.fw==="yes"?t("dFwYes"):t("dFwNo"))])+'</div><ul><li>'+esc(f(t("dBrief"),{a:animal().toLowerCase(),f:fn,k:L.rules.length+1}))+'</li><li>'+esc(L.caught==="parade"?t("oParade"):t("dCaught"))+'</li><li>'+esc(L.vague?(L.vague===1&&S.lang==="he"?"מצאת את התיקון המדויק אחרי ניסיון כללי אחד.":f(t("dFixVague"),{v:L.vague})):t("dFixExact"))+'</li><li>'+esc((L.fw==="yes"?t("dFwYes"):t("dFwNo"))+" "+L.reason)+'</li></ul></div>'+
+    '<div class="card"><div class="lblrow" style="justify-content:space-between"><h3>'+t("pqTitle")+'</h3>'+hear(t("pq"))+'</div><ul>'+t("pq").map(function(q){return '<li>'+esc(q)+'</li>'}).join("")+'</ul></div>'+
     '<div class="card"><div class="lblrow" style="justify-content:space-between"><h3>'+t("offTitle")+'</h3>'+hear([t("offTitle"),t("offText")])+'</div><p class="sub" style="font-size:16px">'+esc(t("offText"))+'</p></div>'+
     '<div class="stack"><button class="btn primary" id="q">'+t("answer")+'</button><button class="btn ghost" id="again">'+t("newParade")+'</button></div>'+
     '<div class="foot"><button class="link" id="par">'+t("parentsLink")+'</button></div>',"finale",finale);
@@ -498,9 +520,11 @@ function mins(r){return r.end?Math.max(1,Math.round((r.end-r.start)/60000)):"?"}
 function obs(r){var R=T[S.lang].rules;return[
   r.guessedFirst?t("oGuess"):t("oBrief"),
   f(t("oRules"),{r:(r.rules||[]).map(function(x){return R[x]}).join(", ")}),
-  r.checks<=1?t("oCheck1"):f(t("oCheckN"),{n:r.checks}),
+  r.predict?f(t("oPredict"),{r:r.predict==="?"?t("notSure"):R[r.predict]}):"",
+  r.caught==="parade"?t("oParade"):r.caught==="crowd"?t("oCrowd"):t("oSelf"),
+  r.sure?f(t("oSure"),{v:t({v:"veryS",l:"littleS",n:"notS"}[r.sure])}):"",
   r.vague?f(t("oFixN"),{n:r.vague}):t("oFix1"),
-  f(t("oFw"),{v:r.fw==="yes"?t("fwYes"):t("fwNo")})+(r.reason?' ("'+r.reason+'")':"")]}
+  f(t("oFw"),{v:r.fw==="yes"?t("fwYes"):t("fwNo")})+(r.reason?' ("'+r.reason+'")':"")].filter(Boolean)}
 function report(rs){return rs.map(function(r){return "Night Parade - "+fmt(r.start)+(r.director?" - "+r.director:"")+" - "+mins(r)+" "+t("min")+"\n- "+obs(r).join("\n- ")+((r.answers||[]).length?"\n"+r.answers.map(function(a){return "Q: "+a.q+"\nA: "+a.a}).join("\n"):"")}).join("\n\n")}
 function parents(){
   var rs=runs();
