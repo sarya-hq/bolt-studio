@@ -1,0 +1,28 @@
+name: Fetch artwork
+on:
+  push:
+    branches: [main]
+    paths: [assets/urls.txt]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download each file listed as "name url"
+        run: |
+          set -e
+          while read -r name url; do
+            [ -z "$name" ] && continue
+            curl -fsSL "$url" -o "assets/$name"
+            echo "got $name $(stat -c %s assets/$name) bytes"
+          done < assets/urls.txt
+      - name: Commit artwork
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add assets
+          git diff --cached --quiet || git commit -m "Add exported artwork"
+          git push
