@@ -1,6 +1,6 @@
-# Sneaker Lab
+# Night Parade
 
-Mission 01 of a kids' app (ages 7-10) that teaches children to lead AI: write a clear brief, check the AI's work, give exact feedback, make the final call.
+Mission 1 of a kids' app (ages 7-10) that teaches children to lead AI: write a clear brief, check the AI's work, give exact feedback, make the final call.
 
 - Single-file installable web app: `index.html`, with `manifest.webmanifest`, `sw.js` (offline) and icons.
 - English (recorded voice clips embedded) and Hebrew (device voice), switch at the top.

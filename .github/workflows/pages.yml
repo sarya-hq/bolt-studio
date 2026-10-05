@@ -21,7 +21,7 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
-      - run: mkdir _site && cp index.html manifest.webmanifest sw.js icon-*.png _site/
+      - run: mkdir _site && cp -r index.html manifest.webmanifest sw.js icon-*.png assets _site/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
