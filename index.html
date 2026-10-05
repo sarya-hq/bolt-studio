@@ -170,7 +170,7 @@ html[dir="rtl"] .msg.kid{border-radius:24px 24px 24px 6px}
 .confetti{position:fixed;inset:0;pointer-events:none;z-index:8}
 .offline{background:rgba(255,107,74,.14);border:1px solid rgba(255,107,74,.5);border-radius:16px;padding:12px 14px;font-size:15px}
 .seg{display:flex;gap:8px;flex-wrap:wrap}
-.seg button{flex:1;min-width:64px;height:56px;border-radius:18px;border:1.5px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);font:700 20px var(--font);cursor:pointer}
+.seg button{flex:1 0 calc(25% - 8px);min-width:56px;height:56px;border-radius:18px;border:1.5px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);font:700 20px var(--font);cursor:pointer}
 .seg button[aria-pressed="true"]{border-color:var(--coral);background:rgba(255,107,74,.16)}
 .small{font-size:14px;color:var(--soft)}
 .ver{font-size:12px;color:var(--soft);text-align:center;opacity:.6}
@@ -182,7 +182,7 @@ td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:start;verti
 <div id="app"></div>
 <audio id="voice" playsinline preload="auto"></audio>
 <script>
-var VERSION="17";
+var VERSION="18";
 /* ---------- words ---------- */
 // he: string, or [girl, boy] when it changes with the child's gender. Bolt herself is always female.
 var W={
@@ -199,6 +199,16 @@ var W={
  intro:{en:"Hi {n}! I'm Bolt. I'm a computer program that makes pictures. I'm fast, but when you don't tell me something, I guess. You're the boss: tell me, check me, fix me.",
         he:["היי {n}! אני בולט. אני תוכנת מחשב שמציירת תמונות. אני מהירה, אבל כשלא אומרים לי משהו, אני מנחשת. את הבוסית: תגידי לי, תבדקי אותי ותתקני אותי.","היי {n}! אני בולט. אני תוכנת מחשב שמציירת תמונות. אני מהירה, אבל כשלא אומרים לי משהו, אני מנחשת. אתה הבוס: תגיד לי, תבדוק אותי ותתקן אותי."]},
  welcome:{en:"Welcome back, {n}! What should we make today?",he:["ברוכה השבה, {n}! מה נכין היום?","ברוך השב, {n}! מה נכין היום?"]},
+ m_sneaker:{en:"Design a sneaker",he:"לעצב נעל ספורט"}, m_sneaker_s:{en:"Your own drop",he:"הקולקציה שלך"},
+ m_album:{en:"Make an album cover",he:"לעצב עטיפת אלבום"}, m_album_s:{en:"For a band you invent",he:"ללהקה שהמצאת"},
+ m_gamechar:{en:"Create a game character",he:"ליצור דמות למשחק"}, m_gamechar_s:{en:"Look, gear, vibe",he:"מראה, ציוד, אווירה"},
+ m_scene:{en:"Direct a movie scene",he:"לביים סצנה מסרט"}, m_scene_s:{en:"One frame, your shot",he:"פריים אחד, הצילום שלך"},
+ ask_sneaker:{en:"Describe your sneaker. Colors, materials, shape, and what makes it different.",he:["תארי את הנעל. צבעים, חומרים, צורה, ומה מייחד אותה.","תאר את הנעל. צבעים, חומרים, צורה, ומה מייחד אותה."]},
+ ask_album:{en:"What's the band and the vibe? Describe the cover image, the colors and the mood.",he:["מה הלהקה ומה האווירה? תארי את התמונה, הצבעים והמצב רוח.","מה הלהקה ומה האווירה? תאר את התמונה, הצבעים והמצב רוח."]},
+ ask_gamechar:{en:"Describe your character: who they are, what they wear, what they carry, and the style of the game.",he:["תארי את הדמות: מי היא, מה היא לובשת, מה היא מחזיקה, ובאיזה סגנון המשחק.","תאר את הדמות: מי היא, מה היא לובשת, מה היא מחזיקה, ובאיזה סגנון המשחק."]},
+ ask_scene:{en:"You're the director. Where are we, who's in the shot, what's happening, and from what angle?",he:["את הבמאית. איפה אנחנו, מי בפריים, מה קורה, ומאיזו זווית?","אתה הבמאי. איפה אנחנו, מי בפריים, מה קורה, ומאיזו זווית?"]},
+ introTeen:{en:"Hey {n}. I'm Bolt, an AI image model. I'm fast, but I fill every gap you leave with my own defaults. Your job: give a sharp brief, check what I made, and push me until it's right.",he:["היי {n}. אני בולט, מודל בינה מלאכותית שמייצר תמונות. אני מהירה, אבל כל פרט שלא תגידי, אני ממלאת בעצמי. התפקיד שלך: לתת הוראה חדה, לבדוק מה הכנתי, ולדחוף אותי עד שזה נכון.","היי {n}. אני בולט, מודל בינה מלאכותית שמייצר תמונות. אני מהירה, אבל כל פרט שלא תגיד, אני ממלאת בעצמי. התפקיד שלך: לתת הוראה חדה, לבדוק מה הכנתי, ולדחוף אותי עד שזה נכון."]},
+ introLittle:{en:"Hi {n}! I'm Bolt. I draw pictures. Tell me what to draw. If I get it wrong, tell me to fix it!",he:["היי {n}! אני בולט. אני מציירת תמונות. תגידי לי מה לצייר. אם טעיתי, תגידי לי לתקן!","היי {n}! אני בולט. אני מציירת תמונות. תגיד לי מה לצייר. אם טעיתי, תגיד לי לתקן!"]},
  pick:{en:"Pick a mission",he:"בחירת משימה"},
  rulesN:{en:"Bolt knows {k} of your rules",he:"בולט מכירה {k} מהכללים שלך"},
  rules0:{en:"No rules yet. Fix something and teach Bolt one!",he:["עוד אין כללים. תתקני משהו ותלמדי את בולט כלל!","עוד אין כללים. תתקן משהו ותלמד את בולט כלל!"]},
@@ -270,6 +280,9 @@ var W={
 var b_rule_m={en:"Rule Maker: you taught Bolt",he:"ממציא כללים: לימדת את בולט"};
 var MISSIONS=[["creature","🐉","linear-gradient(135deg,#3CCFB0,#1E7E6B)"],["room","🛋️","linear-gradient(135deg,#8B7BFF,#4B3FB5)"],["hero","🦸","linear-gradient(135deg,#FF6B4A,#B33A20)"],["ride","🚀","linear-gradient(135deg,#F4C95D,#B98A12)"],["free","✨","linear-gradient(135deg,#3A4A80,#1B2442)"]];
 var LEVELS=[0,80,200,400,700];
+var TEEN_MISSIONS=[["sneaker","👟","linear-gradient(135deg,#FF6B4A,#B33A20)"],["album","💿","linear-gradient(135deg,#8B7BFF,#4B3FB5)"],["gamechar","🎮","linear-gradient(135deg,#3CCFB0,#1E7E6B)"],["scene","🎬","linear-gradient(135deg,#F4C95D,#B98A12)"],["free","✨","linear-gradient(135deg,#3A4A80,#1B2442)"]];
+function band(){var a=(kid()&&kid().age)||8;return a<=6?"little":a<=9?"kid":a<=12?"tween":"teen"}
+function missions(){var b=band();if(b==="teen")return TEEN_MISSIONS;if(b==="little")return MISSIONS.filter(function(m){return m[0]==="creature"||m[0]==="ride"||m[0]==="free"});return MISSIONS}
 
 /* ---------- state ---------- */
 function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
@@ -447,18 +460,18 @@ function askGender(){
 }
 function askAge(){
  S.redraw=askAge;
- render(bar({back:true})+boltLine(t("howOld"))+'<div class="seg">'+[6,7,8,9,10,11].map(function(a){return '<button data-age="'+a+'">'+a+'</button>'}).join("")+'</div>',function(){
+ render(bar({back:true})+boltLine(t("howOld"))+'<div class="seg">'+[5,6,7,8,9,10,11,12,13,14,15].map(function(a){return '<button data-age="'+a+'">'+a+'</button>'}).join("")+'</div>',function(){
   on("#back",askGender);say(t("howOld"));
   onAll("[data-age]",function(el){kid().age=+el.getAttribute("data-age");persist();say(el.textContent);kid().seenIntro=false;hub()})})
 }
 function hub(){
  S.redraw=hub;var k=kid();if(!k)return home();
- var line=k.seenIntro?t("welcome",{n:S.who}):t("intro",{n:S.who});
+ var line=k.seenIntro?t("welcome",{n:S.who}):t(band()==="teen"?"introTeen":band()==="little"?"introLittle":"intro",{n:S.who});
  var last=k.stars.slice(-8);
  render(bar({gear:true,title:'<button class="pill" id="switch">'+esc(S.who)+' ↺</button>'})+
   boltLine(line)+xpBar()+
   (S.api?'':'<div class="offline">'+esc(t("offline"))+'</div>')+
-  '<div class="over">'+esc(t("pick"))+'</div><div class="stack">'+MISSIONS.map(function(m){return '<button class="mission" data-m="'+m[0]+'"><span class="ic" style="background:'+m[2]+'">'+m[1]+'</span><span><b>'+esc(t("m_"+m[0]))+'</b><span>'+esc(t("m_"+m[0]+"_s"))+'</span></span></button>'}).join("")+'</div>'+
+  '<div class="over">'+esc(t("pick"))+'</div><div class="stack">'+missions().map(function(m){return '<button class="mission" data-m="'+m[0]+'"><span class="ic" style="background:'+m[2]+'">'+m[1]+'</span><span><b>'+esc(t("m_"+m[0]))+'</b><span>'+esc(t("m_"+m[0]+"_s"))+'</span></span></button>'}).join("")+'</div>'+
   '<button class="card" id="rules" style="text-align:start;color:inherit;font:inherit;cursor:pointer;display:flex;gap:12px;align-items:center"><span class="iconbtn" style="pointer-events:none">'+IC.book+'</span><span style="flex:1"><b>'+esc(t("myRules"))+'</b><br><span class="small">'+esc(k.rules.length?t("rulesN",{k:k.rules.length}):t("rules0"))+'</span></span></button>'+
   (last.length?'<div class="card"><div class="small" style="margin-bottom:6px">'+esc(t("briefs"))+'</div>'+last.map(starRow).join(" · ")+'</div>':'')+
   '<div class="over">'+esc(t("gallery"))+'</div>'+(k.pics.length?'<div class="grid" id="grid"></div>':'<p class="sub">'+esc(t("noPics"))+'</p>'),
@@ -507,7 +520,7 @@ function offerRule(r,next){
 }
 function draw(step,text,r){
  thinking(t("drawing"));say(r.bolt_says);
- api("/api/draw",{prompt:r.image_prompt}).then(blobToData).then(function(img){
+ api("/api/draw",{prompt:r.image_prompt,age:kid().age}).then(blobToData).then(function(img){
   var k=kid();
   S.v.push({img:img,understood:r.understood,prompt:r.image_prompt,said:text,stars:r.stars,bolt:r.bolt_says,tip:r.tip,applied:r.applied_rules||[],step:step});
   k.stars.push(Math.max(1,Math.min(3,r.stars|0)));if(k.stars.length>40)k.stars.shift();

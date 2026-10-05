@@ -4,7 +4,8 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const ORIGINS = ["https://sarya-hq.github.io", "http://localhost:8771", "http://localhost:8772", "http://localhost:8780"];
 const IMAGE_MODEL = "@cf/black-forest-labs/flux-1-schnell";
-const STYLE = "Bright, friendly children's picture-book illustration, soft 3D look, warm light, clean simple background, no text, no letters, no words.";
+const STYLE_KID = "Bright, friendly children's picture-book illustration, soft 3D look, warm light, clean simple background, no text, no letters, no words.";
+const STYLE_TEEN = "High-quality modern digital illustration, cinematic lighting, detailed and stylish, no text, no letters, no words, no logos.";
 
 const SCHEMA = {
   type: "object",
@@ -31,7 +32,7 @@ const SCHEMA = {
   },
 };
 
-const SYSTEM = `You are Bolt, a friendly AI helper inside a learning app that teaches children aged 6 to 11 to LEAD an AI: give clear instructions, check what the AI made, and ask for fixes. The child is the boss. You make pictures from what the child asks.
+const SYSTEM = `You are Bolt, a friendly AI helper inside a learning app that teaches children and teens aged 5 to 15 to LEAD an AI: give clear instructions, check what the AI made, and ask for fixes. The child is the boss. You make pictures from what the child asks.
 
 Who you are:
 - You are a computer program. You do not have feelings and you do not pretend to. You are fast, eager and sometimes wrong. When the child leaves something out, you GUESS, and you say so openly.
@@ -52,7 +53,12 @@ Every reply is JSON with these fields:
 - applied_rules: the exact text of any of the child's saved rules you used. [] if none.
 - stars: brief quality 1 to 3. 1 = very vague, 2 = some details, 3 = clear subject plus several specific details. On step "fix" rate how clear the correction was.
 
-Adapt to age: for 6 to 7 keep words very simple and sentences very short; for 10 to 11 you can use slightly richer words and a sharper tip.`;
+Adapt everything to the child's age (given in the request). This matters as much as the picture:
+- 5 to 6: they may not read yet; everything is heard aloud. bolt_says one or two very short sentences with easy words. understood: 3 chips of 1 to 3 words. tip: one tiny, concrete idea ("Tell me a color!"). Be warm and playful. Never ask a question unless the brief is a single word.
+- 7 to 9: short sentences, simple words, playful. 3 to 5 chips. Tip names one missing detail.
+- 10 to 12: normal conversational tone, no baby talk. 4 to 6 chips. Tip can name what kind of detail helps (size, mood, setting, style) and why.
+- 13 to 15: talk like a cool older cousin, never childish, no exclamation overload, no "boss" cheerleading. 4 to 6 chips. Tip coaches real prompting craft: specificity, constraints, style references, point of view, and that the AI fills every gap with its own default. Their missions may be more grown-up (a sneaker, an album cover, a game character, a movie poster scene); still no text in the picture.
+Never mention the age or the age group to the child.`;
 
 function cors(req) {
   const o = req.headers.get("Origin") || "";
@@ -74,7 +80,7 @@ async function think(env, b) {
   const kid = b.kid || {};
   const req = {
     language: b.lang === "he" ? "Hebrew" : "English",
-    child: { name: clip(kid.name, 30), gender: kid.g === "m" ? "boy" : kid.g === "f" ? "girl" : "unknown", age: Number(kid.age) || 8 },
+    child: { name: clip(kid.name, 30), gender: kid.g === "m" ? "boy" : kid.g === "f" ? "girl" : "unknown", age: Math.min(15, Math.max(5, Number(kid.age) || 8)) },
     step: b.step === "fix" ? "fix" : "brief",
     mission: clip(b.mission, 60),
     child_said: clip(b.text, 600),
@@ -96,8 +102,8 @@ async function think(env, b) {
   return JSON.parse(text);
 }
 
-async function draw(env, prompt, seed) {
-  const out = await env.AI.run(IMAGE_MODEL, { prompt: clip(prompt, 1800) + " " + STYLE, steps: 6 });
+async function draw(env, prompt, age) {
+  const out = await env.AI.run(IMAGE_MODEL, { prompt: clip(prompt, 1800) + " " + (Number(age) >= 12 ? STYLE_TEEN : STYLE_KID), steps: 6 });
   const bin = Uint8Array.from(atob(out.image), (c) => c.charCodeAt(0));
   return bin;
 }
@@ -143,7 +149,7 @@ export default {
       if (url.pathname === "/api/draw" && req.method === "POST") {
         const b = await req.json();
         if (!b.prompt) return json(req, { error: "no prompt" }, 400);
-        const img = await draw(env, b.prompt, b.seed);
+        const img = await draw(env, b.prompt, b.age);
         return new Response(img, { headers: { "Content-Type": "image/jpeg", ...cors(req) } });
       }
       if (url.pathname === "/api/listen-token" && req.method === "POST") {
