@@ -15,19 +15,20 @@ jobs:
     defaults: { run: { working-directory: worker } }
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - name: Check keys
+        env:
+          RAW_ACC: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           missing=""
           [ -n "$CLOUDFLARE_API_TOKEN" ] || missing="$missing CLOUDFLARE_API_TOKEN"
-          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || missing="$missing CLOUDFLARE_ACCOUNT_ID"
+          [ -n "$RAW_ACC" ] || missing="$missing CLOUDFLARE_ACCOUNT_ID"
           if [ -n "$missing" ]; then echo "::error::Missing GitHub secrets:$missing"; exit 1; fi
           # Accept the account ID however it was pasted (bare, inside a dashboard link, with spaces).
-          acc=$(printf '%s' "$CLOUDFLARE_ACCOUNT_ID" | grep -oiE '[0-9a-f]{32}' | head -1)
+          acc=$(printf '%s' "$RAW_ACC" | grep -oiE '[0-9a-f]{32}' | head -1)
           if [ -n "$acc" ]; then echo "::add-mask::$acc"; echo "CLOUDFLARE_ACCOUNT_ID=$acc" >> "$GITHUB_ENV"; else echo "Account ID not recognised; letting Wrangler find it from the token"; echo "CLOUDFLARE_ACCOUNT_ID=" >> "$GITHUB_ENV"; fi
       - run: npm ci
       - name: Deploy
