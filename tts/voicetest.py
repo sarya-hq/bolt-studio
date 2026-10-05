@@ -20,7 +20,7 @@ def tts(text, voice, pitch=None, rate=None, lang="he-IL"):
     if voice.split("-")[0:2]!=["he","IL"]: t=f'<lang xml:lang="he-IL">{t}</lang>'
     ssml=f'<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="{lang}"><voice name="{voice}">{t}</voice></speak>'
     return get(f"https://{REG}.tts.speech.microsoft.com/cognitiveservices/v1",ssml.encode(),{"Ocp-Apim-Subscription-Key":KEY,"Content-Type":"application/ssml+xml","X-Microsoft-OutputFormat":"audio-24khz-96kbitrate-mono-mp3","User-Agent":"bolt"})
-variants=[("A","היום באפליקציה (הילה, קול מוגבה)","he-IL-HilaNeural","+4%","-3%",False),
+variants=[("A","הקודם (הילה, קול מוגבה)","he-IL-HilaNeural","+4%","-3%",False),
           ("B","הילה, קול טבעי","he-IL-HilaNeural",None,None,False),
           ("C","הילה, קול טבעי + ניקוד","he-IL-HilaNeural",None,None,True)]
 fem=[v["ShortName"] for v in he if v["Locale"]!="he-IL" and v["Gender"]=="Female"]
@@ -41,6 +41,16 @@ for code,label,voice,p,r,useN in variants:
         except Exception as e:
             print("fail",code,voice,e); page.append(f'<p>נכשל: {html.escape(str(e))[:80]}</p>')
     page.append('</div>')
+# Gender check through the live app voice: the same written words, read for a girl and for a boy.
+try:
+    api=json.load(open("api.json"))["url"]
+    page.append('<div class="v"><b>G</b> · בדיקת לשון: אותן מילים כתובות, פעם לבת ופעם לבן')
+    for j,(txt,g,lab) in enumerate([("ספרי לי על היצור שלך. לא אמרת איזה צבע. זה מה שרצית?","f","לבת"),("ספר לי על היצור שלך. לא אמרת איזה צבע. זה מה שרצית?","m","לבן")]):
+        a=get(api+"/api/speak",json.dumps({"text":txt,"lang":"he","g":g}).encode(),{"Content-Type":"application/json","Origin":"https://sarya-hq.github.io"})
+        open(f"voicetest/G{j}.mp3","wb").write(a)
+        page.append(f'<p>{lab}: {html.escape(txt)}</p><audio controls preload="none" src="G{j}.mp3"></audio>')
+    page.append('</div>')
+except Exception as e: print("gender section failed",e)
 page.append('</body></html>')
 open("voicetest/index.html","w").write("\n".join(page))
 print("niqqud:",nik)

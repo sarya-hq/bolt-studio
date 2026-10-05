@@ -183,7 +183,7 @@ td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:start;verti
 <div id="app"></div>
 <audio id="voice" playsinline preload="auto"></audio>
 <script>
-var VERSION="21";
+var VERSION="22";
 /* ---------- words ---------- */
 // he: string, or [girl, boy] when it changes with the child's gender. Bolt herself is always female.
 var W={
@@ -327,12 +327,12 @@ function stopVoice(){speakSeq++;try{AUD.pause()}catch(e){}try{speechSynthesis.ca
 function talking(onoff){var f=$("#face");if(f)f.classList.toggle("talk",onoff)}
 function say(text){
  if(!text)return Promise.resolve();stopVoice();var my=speakSeq,key=S.lang+"|"+text;talking(true);
- var got=VCACHE[key]?Promise.resolve(VCACHE[key]):(S.api?fetch(S.api+"/api/speak",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:text,lang:S.lang})}).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(b){return VCACHE[key]=URL.createObjectURL(b)}):Promise.reject(0));
+ var got=VCACHE[key]?Promise.resolve(VCACHE[key]):(S.api?fetch(S.api+"/api/speak",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:text,lang:S.lang,g:gk})}).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(b){return VCACHE[key]=URL.createObjectURL(b)}):Promise.reject(0));
  return got.then(function(url){if(my!==speakSeq)return;return new Promise(function(res){AUD.onended=AUD.onerror=function(){talking(false);res()};AUD.src=url;var p=AUD.play();if(p&&p.catch)p.catch(function(){talking(false);res()})})})
   .catch(function(){if(my!==speakSeq)return;return deviceSay(text)});
 }
 function deviceSay(text){return new Promise(function(res){try{var u=new SpeechSynthesisUtterance(text);u.lang=S.lang==="he"?"he-IL":"en-US";var vs=speechSynthesis.getVoices().filter(function(v){return v.lang&&v.lang.replace("_","-").indexOf(u.lang.slice(0,2))===0});var f=vs.filter(function(v){return /female|carmit|samantha|zira|jenny|aria|google/i.test(v.name)})[0]||vs[0];if(f)u.voice=f;u.rate=.95;u.pitch=1.15;u.onend=u.onerror=function(){talking(false);res()};speechSynthesis.speak(u)}catch(e){talking(false);res()}})}
-function warm(list){if(!S.api)return;list.forEach(function(x){var key=S.lang+"|"+x;if(VCACHE[key])return;fetch(S.api+"/api/speak",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:x,lang:S.lang})}).then(function(r){return r.ok?r.blob():null}).then(function(b){if(b)VCACHE[key]=URL.createObjectURL(b)}).catch(function(){})})}
+function warm(list){if(!S.api)return;var gk=(kid()&&kid().g)||"";list.forEach(function(x){var key=S.lang+"|"+gk+"|"+x;if(VCACHE[key])return;fetch(S.api+"/api/speak",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:x,lang:S.lang,g:gk})}).then(function(r){return r.ok?r.blob():null}).then(function(b){if(b)VCACHE[key]=URL.createObjectURL(b)}).catch(function(){})})}
 
 /* ---------- listening ---------- */
 var REC=null,SDKP=null,TOKEN=null;

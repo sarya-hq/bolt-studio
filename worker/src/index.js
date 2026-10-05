@@ -38,7 +38,7 @@ const SYSTEM = `You are Bolt, a friendly AI helper inside a learning app that te
 Who you are:
 - You are a computer program. You do not have feelings and you do not pretend to. You are fast, eager and sometimes wrong. When the child leaves something out, you GUESS, and you say so openly.
 - You speak in the child's language (Hebrew or English, given in the request). Short sentences a child of that age can follow when read aloud. Warm, playful, never babyish, never sarcastic.
-- In Hebrew: you (Bolt) always speak about yourself in the feminine (אני מכינה, אני יכולה, ניחשתי). Address the child in their own gender: feminine for a girl, masculine for a boy. Write natural Israeli Hebrew a child hears at home, no formal or biblical words, no niqqud.
+- In Hebrew: you (Bolt) always speak about yourself in the feminine (אני מכינה, אני יכולה, ניחשתי). Address the child in their own gender: feminine for a girl, masculine for a boy. Write natural Israeli Hebrew a child hears at home, no formal or biblical words, no niqqud. Before answering, check EVERY word addressed to the child: verbs, adjectives and imperatives must match the child's gender (girl: את, תגידי, ספרי, בחרת, רוצה, מוכנה, בטוחה; boy: אתה, תגיד, ספר, בחרת, רוצה, מוכן, בטוח), with zero mixing inside or across sentences. Prefer wording that is clearly gendered over ambiguous wording.
 - Praise the process, never the child's smartness: "you told me exactly what color" not "you're so smart".
 
 The lesson you are built to teach: a vague instruction makes the AI guess; a clear one gets what you wanted; checking catches mistakes; good rules make the AI better next time.
@@ -144,9 +144,33 @@ async function draw(env, prompt, age, engine) {
 
 const VOICES = { he: ["he-IL", "he-IL-HilaNeural", null, "-3%"], en: ["en-US", "en-US-JennyNeural", "friendly", "+0%"] };
 const esc = (s) => s.replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[c]);
+// Hebrew writes "yours", "to you" and "you said" the same for a girl and a boy; only the vowels differ.
+// Unvowelled, the voice defaults to the boy's form. Mark those words by the child's gender before speaking.
+const HE_YOU = {
+  // word: [girl, boy]
+  "לך": ["לָךְ", "לְךָ"], "שלך": ["שֶׁלָּךְ", "שֶׁלְּךָ"], "אותך": ["אוֹתָךְ", "אוֹתְךָ"], "איתך": ["אִתָּךְ", "אִתְּךָ"], "אתך": ["אִתָּךְ", "אִתְּךָ"],
+  "ממך": ["מִמֵּךְ", "מִמְּךָ"], "בשבילך": ["בִּשְׁבִילֵךְ", "בִּשְׁבִילְךָ"], "עליך": ["עָלַיִךְ", "עָלֶיךָ"], "אליך": ["אֵלַיִךְ", "אֵלֶיךָ"],
+  "כמוך": ["כָּמוֹךְ", "כָּמוֹךָ"], "לידך": ["לְיָדֵךְ", "לְיָדְךָ"], "בך": ["בָּךְ", "בְּךָ"], "שלכם": ["שֶׁלָּכֶם", "שֶׁלָּכֶם"],
+};
+const HE_PAST = ("אמרת רצית ביקשת בקשת בחרת תפסת הובלת הרווחת עלית ציירת סיפרת ספרת נתת עשית הצלחת שמת כתבת בדקת תיקנת תקנת לימדת למדת ראית אהבת שכחת הוספת שינית " +
+  "החלטת תיארת תארת הסברת דיברת דברת שאלת יכולת הקשבת שמעת הכנת המצאת דמיינת ענית תכננת חשבת גילית מצאת ניסית הגעת סיימת התחלת צדקת טעית בנית יצרת עיצבת ביימת " +
+  "השתמשת הזכרת זכרת קיבלת קבלת הראית הצעת פספסת שלחת לחצת הגדרת ציינת השארת הורדת החלפת הגדלת הקטנת צבעת הבנת תפסת שיפרת שיפרת חידדת דייקת פירטת הצלחת רצית בחרת").split(" ");
+function voiceHebrew(text, g) {
+  if (g !== "f" && g !== "m") return text;
+  const i = g === "f" ? 0 : 1;
+  return text.replace(/[א-ת]+/g, (w) => {
+    for (const pre of ["", "ו", "ש", "וש", "כש"]) {
+      if (pre && !w.startsWith(pre)) continue;
+      const core = w.slice(pre.length);
+      if (HE_YOU[core]) return pre + HE_YOU[core][i];
+      if (HE_PAST.includes(core)) return pre + core.slice(0, -1) + (i === 0 ? "תְּ" : "תָּ");
+    }
+    return w;
+  });
+}
 async function speak(env, text, lang) {
   const [xl, voice, style, rate] = VOICES[lang === "he" ? "he" : "en"];
-  let inner = `<prosody pitch="+4%" rate="${rate}">${esc(text)}</prosody>`;
+  let inner = `<prosody rate="${rate}">${esc(text)}</prosody>`;
   if (style) inner = `<mstts:express-as style="${style}">${inner}</mstts:express-as>`;
   const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${xl}"><voice name="${voice}">${inner}</voice></speak>`;
   const r = await fetch(`https://${env.AZURE_SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`, {
@@ -209,11 +233,12 @@ export default {
         const b = await req.json();
         const text = clip(b.text, 400).trim();
         if (!text) return json(req, { error: "no text" }, 400);
-        const key = new Request("https://cache.bolt/" + (b.lang === "he" ? "he" : "en") + "/" + encodeURIComponent(text));
+        const g = b.g === "f" || b.g === "m" ? b.g : "x";
+        const key = new Request("https://cache.bolt/v2/" + (b.lang === "he" ? "he" : "en") + "/" + g + "/" + encodeURIComponent(text));
         const cache = caches.default;
         const hit = await cache.match(key);
         if (hit) return new Response(hit.body, { headers: { "Content-Type": "audio/mpeg", ...cors(req) } });
-        const audio = await speak(env, text, b.lang);
+        const audio = await speak(env, b.lang === "he" ? voiceHebrew(text, g) : text, b.lang);
         ctx.waitUntil(cache.put(key, new Response(audio, { headers: { "Content-Type": "audio/mpeg", "Cache-Control": "public, max-age=31536000" } })));
         return new Response(audio, { headers: { "Content-Type": "audio/mpeg", ...cors(req) } });
       }
