@@ -183,7 +183,7 @@ td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:start;verti
 <div id="app"></div>
 <audio id="voice" playsinline preload="auto"></audio>
 <script>
-var VERSION="23";
+var VERSION="24";
 /* ---------- words ---------- */
 // he: string, or [girl, boy] when it changes with the child's gender. Bolt herself is always female.
 var W={
@@ -275,6 +275,8 @@ var W={
  levelUp:{en:"Level up! You're now {l}.",he:["עלית שלב! עכשיו את {l}.","עלית שלב! עכשיו אתה {l}."]},
  starsMsg1:{en:"I had to guess a lot. More details next time!",he:"הייתי צריכה לנחש הרבה. בפעם הבאה יותר פרטים!"},
  back:{en:"Back",he:"חזרה"},
+ listen:{en:"Listen",he:"להקשיב"},
+ readMissions:{en:"Here is what we can make:",he:"זה מה שאפשר להכין:"},
  changePlayer:{en:"Switch player",he:"החלפת שחקן"},
  editKid:{en:"Change age or details",he:"לשנות גיל או פרטים"},
  slow:{en:"Still working, almost there...",he:"עוד רגע, כמעט מוכן..."},
@@ -474,12 +476,13 @@ function hub(){
  render(bar({gear:true,title:'<button class="pill" id="switch">👤 '+esc(S.who)+' · '+esc(t("changePlayer"))+'</button>'})+
   boltLine(line)+xpBar()+
   (S.api?'':'<div class="offline">'+esc(t("offline"))+'</div>')+
-  '<div class="over">'+esc(t("pick"))+'</div><div class="stack">'+missions().map(function(m){return '<button class="mission" data-m="'+m[0]+'"><span class="ic" style="background:'+m[2]+'">'+m[1]+'</span><span><b>'+esc(t("m_"+m[0]))+'</b><span>'+esc(t("m_"+m[0]+"_s"))+'</span></span></button>'}).join("")+'</div>'+
+  '<div class="over">'+esc(t("pick"))+'</div><div class="stack">'+missions().map(function(m){var title=t("m_"+m[0]),sub=t("m_"+m[0]+"_s");return '<div class="row" style="gap:8px;align-items:stretch"><button class="mission" style="flex:1" data-m="'+m[0]+'"><span class="ic" style="background:'+m[2]+'">'+m[1]+'</span><span><b>'+esc(title)+'</b><span>'+esc(sub)+'</span></span></button><button class="hear" style="flex:0 0 52px;width:52px;height:auto;border-radius:20px" data-say="'+esc(title+". "+sub)+'" aria-label="'+esc(t("listen"))+'">'+IC.speak+'</button></div>'}).join("")+'</div>'+
   '<button class="card" id="rules" style="text-align:start;color:inherit;font:inherit;cursor:pointer;display:flex;gap:12px;align-items:center"><span class="iconbtn" style="pointer-events:none">'+IC.book+'</span><span style="flex:1"><b>'+esc(t("myRules"))+'</b><br><span class="small">'+esc(k.rules.length?t("rulesN",{k:k.rules.length}):t("rules0"))+'</span></span></button>'+
   (last.length?'<div class="card"><div class="small" style="margin-bottom:6px">'+esc(t("briefs"))+'</div>'+last.map(starRow).join(" · ")+'</div>':'')+
   '<div class="over">'+esc(t("gallery"))+'</div>'+(k.pics.length?'<div class="grid" id="grid"></div>':'<p class="sub">'+esc(t("noPics"))+'</p>'),
   function(){
-   say(line);k.seenIntro=true;persist();
+   var opts=missions().map(function(m){return t("m_"+m[0])}).join(". ");
+   say(line).then(function(){if(S.redraw===hub&&(band()==="little"||band()==="kid"))return say(t("readMissions")+" "+opts)});k.seenIntro=true;persist();
    on("#switch",function(){say(t("changePlayer"));home()});on("#gear",gate);on("#rules",rulebook);
    onAll("[data-m]",function(el){S.mission=el.getAttribute("data-m");say(el.querySelector("b").textContent);brief()});
    if(k.pics.length){var g=$("#grid");k.pics.slice().reverse().slice(0,12).forEach(function(p){getPic(p.id).then(function(rec){if(!rec)return;var b=document.createElement("button");b.innerHTML='<img alt="" src="'+rec.img+'">';b.onclick=function(){viewPic(rec)};g.appendChild(b)})})}
