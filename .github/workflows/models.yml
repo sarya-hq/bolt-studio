@@ -15,10 +15,12 @@ jobs:
           RAW_ACC: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           export CLOUDFLARE_ACCOUNT_ID=$(printf '%s' "$RAW_ACC" | grep -oiE '[0-9a-f]{32}' | head -1)
-          npx wrangler ai models --json > m.json 2>/dev/null || true
+          curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/ai/models/search?per_page=200" > m.json
           python3 -c "
           import json
-          for m in json.load(open('m.json')):
+          d=json.load(open('m.json'))
+          print('success',d.get('success'),d.get('errors'))
+          for m in d.get('result') or []:
               t=(m.get('task') or {}).get('name','')
-              if 'Image' in t and 'Classification' not in t: print(m['name'],'|',t,'|',(m.get('description') or '')[:120])
+              if 'Image' in t and 'Classification' not in t: print(m['name'],'|',t,'|',(m.get('description') or '')[:150].replace(chr(10),' '))
           "
