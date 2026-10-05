@@ -159,7 +159,7 @@ var VOICE={};
 var UI={};
 var HE={},EN={};function loadVoice(f,cb){try{fetch("assets/"+f,{cache:"no-cache"}).then(function(r){return r.ok?r.json():{}}).then(function(j){cb(j||{})}).catch(function(){})}catch(e){}}
 loadVoice("en-voice.json",function(j){EN=j});loadVoice("he-voice.json",function(j){HE=j});
-var VERSION="8";
+var VERSION="9";
 var LINES_EN={"intro": "Hi, I'm Bolt, your AI builder. The city's night parade is in three days, and you're the creative director. I build fast, but I make mistakes. You set the rules, I build, and you check my work.", "back": "Welcome back, director. Ready for another parade?", "how": "Before I start: do you want to give me a brief, or should I just guess?", "guess": "Here's my guess. A box with balloons. Is that what you had in mind?", "guessAfter": "That's what happens when an AI guesses. Give me a clear brief, and I'll build what you actually want.", "brief": "Pick your float, give it a name, and choose your rules. The city already has one rule: the float must be easy to see at night.", "build": "Brief received. Building your float now.", "check": "Here it is, at night on the parade street. Check it against every rule. Tap yes or no for each one.", "checkWrong": "Look at the picture again. If you were standing in the crowd, could you see it?", "checkRight": "You caught it. The rule says easy to see at night, and it isn't. How should I fix it?", "vague1": "I made it shinier. But look, it's still dark. I didn't know what you meant.", "vague2": "I added more lights. But I put them underneath again. It's still hard to see. Tell me exactly where they go.", "fixed": "Done. The lights face outward now, on every side. Drag the slider to compare before and after.", "fireworks": "One more decision. I can add fireworks on top. They're exciting, but loud bangs might scare little kids in the crowd. Your call.", "why": "Why did you decide that?", "finale": "The parade is ready, and it's yours. Great directing.", "q1": "Quick question. How did that mission feel?", "q2": "Which part was the hardest?", "thanks": "Thanks for telling me. See you at the next parade."};
 var A="assets/";
 var app=document.getElementById("app");
@@ -167,7 +167,7 @@ var app=document.getElementById("app");
 var LINES_HE={
 intro:"היי, אני בולט, הבונה שלכם עם בינה מלאכותית. מצעד הלילה של העיר יוצא בעוד שלושה ימים, ואתם המנהלים הקריאייטיביים. אני בונה מהר, אבל אני גם טועה. אתם קובעים את הכללים, אני בונה, ואתם בודקים.",
 back:"ברוכים השבים! מוכנים למצעד נוסף?",
-how:"לפני שאני מתחיל: רוצים לתת לי הוראות, או שאני פשוט אנחש?",
+how:"לפני שאני מתחילה: רוצים לתת לי הוראות, או שאני פשוט אנחש?",
 guess:"הנה הניחוש שלי: קופסה עם בלונים. זה מה שדמיינתם?",
 guessAfter:"זה מה שקורה כשבינה מלאכותית מנחשת. תנו לי הוראות ברורות, ואבנה את מה שאתם באמת רוצים.",
 brief:"בחרו קרון, תנו לו שם ובחרו כללים. לעירייה כבר יש כלל אחד: את הקרון חייבים לראות בקלות בלילה.",
@@ -178,7 +178,7 @@ checkRight:"תפסתם אותי. הכלל אומר שרואים אותו בקל�
 vague1:"עשיתי אותו מבריק יותר. אבל תראו, הוא עדיין חשוך. לא ידעתי למה התכוונתם.",
 vague2:"הוספתי עוד אורות. אבל שוב שמתי אותם מתחת. עדיין קשה לראות אותו. תגידו לי בדיוק איפה לשים אותם.",
 fixed:"סיימתי. עכשיו האורות פונים החוצה, מכל הצדדים. גררו את המחוון כדי להשוות לפני ואחרי.",
-fireworks:"עוד החלטה אחת. אני יכול להוסיף זיקוקים מעל הקרון. הם מרגשים, אבל הפיצוצים הרועשים עלולים להפחיד ילדים קטנים בקהל. ההחלטה שלכם.",
+fireworks:"עוד החלטה אחת. אני יכולה להוסיף זיקוקים מעל הקרון. הם מרגשים, אבל הפיצוצים הרועשים עלולים להפחיד ילדים קטנים בקהל. ההחלטה שלכם.",
 why:"למה החלטתם ככה?",
 finale:"המצעד מוכן, והוא שלכם. ניהול מצוין!",
 q1:"שאלה קטנה: איך הייתה המשימה?",
@@ -215,14 +215,14 @@ en:{over:"Mission 1 · The Night Parade",hero:"Lead the AI.",heroSub:"You set th
  oFix1:"Gave the exact fix on the first try",oFixN:"Tried {n} vague fix(es) before the exact one",oFw:"Fireworks: {v}",fwYes:"added",fwNo:"not added",
  replay:"Hear it again",sound:"Sound",readAll:"Read this to me",talk:"Talk instead of typing",autoRead:"Bolt reads aloud automatically",autoReadSub:"Every screen is read aloud as it opens. Speaker buttons always work, even when this is off.",on:"On",off:"Off"},
 he:{over:"משימה 1 · מצעד הלילה",hero:"מובילים את ה-AI.",heroSub:"אתם קובעים את הכללים. בולט בונה. אתם בודקים.",nameQ:"שם המנהל",namePh:"כתבו את השם",start:"מתחילים משימה",parentsLink:"להורים",next:"הבא",
- giveBrief:"לתת לבולט הוראות",giveBriefSub:"אתם מחליטים מה ייבנה",letGuess:"שבולט ינחש",letGuessSub:"נראה מה יקרה",
+ giveBrief:"לתת לבולט הוראות",giveBriefSub:"אתם מחליטים מה ייבנה",letGuess:"שבולט תנחש",letGuessSub:"נראה מה יקרה",
  notWanted:"זה לא מה שרציתי",isWanted:"בערך",writeBrief:"לכתוב הוראות",
  floatLbl:"הקרון שלכם",nameLbl:"תנו לו שם",rulesLbl:"כללים לבולט",cityTag:"כלל של העירייה",yourRules:"הוסיפו לפחות כלל אחד משלכם",
  animals:{fox:"שועל",owl:"ינשוף",whale:"לווייתן"},names:{Ember:"אמבר",Luna:"לונה",Nova:"נובה"},
  rules:{night:"רואים אותו בקלות בלילה",face:"יש לו פנים חמודות",wheels:"נוסע על גלגלים",gate:"עובר בשער העיר"},
  send:"שולחים לבולט",summary:"קרון {a} · {n} · {k} כללים",building:"בונה את הקרון",
  checking:"בדיקת לילה",yes:"כן",no:"לא",doneChecking:"סיימתי לבדוק",answerAll:"ענו כן או לא על כל כלל.",recheck:"בדקו את זה שוב.",
- v1:"תעשה אותו יותר טוב.",v2:"תוסיף עוד אורות.",x:"תפנה את האורות החוצה, כדי שיראו אותו מכל הצדדים.",
+ v1:"תעשי אותו יותר טוב.",v2:"תוסיפי עוד אורות.",x:"תפני את האורות החוצה, כדי שיראו אותו מכל הצדדים.",
  before:"לפני",after:"אחרי",
  addFw:"להוסיף זיקוקים",noFw:"בלי זיקוקים",
  rAdd:["זה ירגש את כולם","אנשים אוהבים זיקוקים","זו חגיגה"],rNo:["ילדים קטנים עלולים להיבהל","האורות מספיקים","בטיחות קודם"],
