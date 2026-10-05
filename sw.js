@@ -1,4 +1,5 @@
-const C="np-v6";const F=["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-180.png", "assets/home.jpg", "assets/bolt.jpg", "assets/bolt-face.jpg", "assets/fox-lit.jpg", "assets/owl-lit.jpg", "assets/whale-lit.jpg", "assets/fox-dark.jpg", "assets/owl-dark.jpg", "assets/whale-dark.jpg", "assets/finale.jpg", "assets/guess.jpg"];
-self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F)));self.skipWaiting()});
-self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});
-self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;e.respondWith(fetch(e.request).then(r=>{const cp=r.clone();if(new URL(e.request.url).origin===location.origin)caches.open(C).then(c=>c.put(e.request,cp));return r}).catch(()=>caches.match(e.request)))});
+const C="np-v7";const F=["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-180.png", "assets/home.jpg", "assets/bolt.jpg", "assets/bolt-face.jpg", "assets/fox-lit.jpg", "assets/owl-lit.jpg", "assets/whale-lit.jpg", "assets/fox-dark.jpg", "assets/owl-dark.jpg", "assets/whale-dark.jpg", "assets/finale.jpg", "assets/guess.jpg"];
+self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F.map(u=>new Request(u,{cache:"reload"})))));self.skipWaiting()});
+self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
+self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;const req=e.request.mode==="navigate"||e.request.url.endsWith(".json")?new Request(e.request,{cache:"no-cache"}):e.request;
+e.respondWith(fetch(req).then(r=>{const cp=r.clone();if(new URL(e.request.url).origin===location.origin&&r.ok)caches.open(C).then(c=>c.put(e.request,cp));return r}).catch(()=>caches.match(e.request)))});
