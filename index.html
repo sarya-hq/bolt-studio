@@ -108,6 +108,31 @@ html[dir="rtl"] .msg.kid{border-radius:24px 24px 24px 6px}
 .bars i{display:block;width:6px;border-radius:3px;background:var(--coral);height:6px;transition:height .08s linear}
 .linkbtn{background:none;border:0;color:var(--soft);font:600 15px var(--font);cursor:pointer;padding:8px;text-decoration:underline;text-underline-offset:4px}
 .again{display:none}
+/* stage: one phone screen, no scrolling. The picture takes what is left. */
+.screen.stage{height:100vh;height:100dvh;min-height:0;overflow:hidden;gap:10px;padding-bottom:max(14px,env(safe-area-inset-bottom))}
+.stage .bar{min-height:44px}
+.stagepic{flex:1 1 auto;min-height:120px;border-radius:24px;overflow:hidden;position:relative;background:#0A0F1E;touch-action:pan-y}
+.stagepic img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:opacity .25s}
+.stagepic img.hide{opacity:0}
+.stagepic .tag{position:absolute;top:10px;inset-inline-start:10px;background:rgba(14,20,38,.75);font-size:14px;font-weight:700;padding:6px 12px;border-radius:999px}
+.stagepic .stars{position:absolute;top:10px;inset-inline-end:10px;background:rgba(14,20,38,.75);padding:2px 10px;border-radius:999px;font-size:18px}
+.bolt.compact{padding:10px 12px;gap:10px;border-radius:20px;align-items:center}
+.bolt.compact .face{flex-basis:40px;width:40px;height:40px}
+.bolt.compact .say{font-size:16px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bolt.compact .hear{flex-basis:36px;width:36px;height:36px}
+.chiprow{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px;flex:0 0 auto}
+.chiprow::-webkit-scrollbar{display:none}
+.chiprow .pill{white-space:nowrap;flex:0 0 auto;font-size:14px;padding:7px 11px}
+.ask{font-size:18px;font-weight:700;text-align:center;flex:0 0 auto}
+.actions{display:flex;gap:10px;flex:0 0 auto}
+.actions .btn{min-height:54px;font-size:17px}
+.toggle{display:flex;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:4px;flex:0 0 auto}
+.toggle button{flex:1;height:40px;border:0;border-radius:999px;background:none;color:var(--soft);font:700 15px var(--font);cursor:pointer}
+.toggle button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tipline{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--soft);flex:0 0 auto}
+.tipline span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+@media (max-height:700px){.bolt.compact .say{-webkit-line-clamp:2}.tipline{display:none}.actions .btn{min-height:50px}}
+.stage .talkbar{margin-top:0}.stage .mic{width:92px;height:92px}.stage .mic svg{width:38px;height:38px}
 /* picture */
 .pic{border-radius:28px;overflow:hidden;position:relative;background:var(--bg2);aspect-ratio:1/1;box-shadow:0 30px 60px -30px rgba(0,0,0,.8)}
 .pic img{width:100%;height:100%;object-fit:cover;display:block}
@@ -157,7 +182,7 @@ td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:start;verti
 <div id="app"></div>
 <audio id="voice" playsinline preload="auto"></audio>
 <script>
-var VERSION="16";
+var VERSION="17";
 /* ---------- words ---------- */
 // he: string, or [girl, boy] when it changes with the child's gender. Bolt herself is always female.
 var W={
@@ -195,7 +220,7 @@ var W={
  typeInstead:{en:"Type instead",he:["להקליד במקום","להקליד במקום"]},
  sayAgain:{en:"Say it again",he:"להגיד שוב"},
  checkHeard:{en:"Did I hear you right? Tap Send, or say it again.",he:["שמעתי נכון? לחצי לשלוח, או תגידי שוב.","שמעתי נכון? לחץ לשלוח, או תגיד שוב."]},
- hearing:{en:"Bolt is listening to what you said...",he:"בולט מקשיבה למה שאמרת..."},
+ hearing:{en:"One second, making sure I got it right...",he:"רגע, בודקת שהבנתי נכון..."},
  notHeard:{en:"I didn't catch that. Try again, a bit louder.",he:"לא שמעתי טוב. ננסה שוב, קצת יותר חזק?"},
  micBlocked:{en:"I can't use the microphone. Allow it in the browser, or type instead.",he:"אין לי גישה למיקרופון. צריך לאשר אותו בדפדפן, או לכתוב."},
  orType:{en:"Or type here",he:["או כתבי כאן","או כתוב כאן"]},
@@ -212,7 +237,7 @@ var W={
  remember:{en:"Should I remember this for next time?",he:"לזכור את זה לפעם הבאה?"},
  rememberYes:{en:"Yes, remember",he:"כן, לזכור"},
  rememberNo:{en:"Just this time",he:"רק הפעם"},
- which:{en:"Slide to compare. Which one is better?",he:["תזיזי כדי להשוות. מה יותר טוב?","תזיז כדי להשוות. מה יותר טוב?"]},
+ which:{en:"Tap Before and After to compare. Which one is better?",he:["לחצי על לפני ואחרי כדי להשוות. מה יותר טוב?","לחץ על לפני ואחרי כדי להשוות. מה יותר טוב?"]},
  before:{en:"Before",he:"לפני"}, after:{en:"After",he:"אחרי"},
  pickBefore:{en:"Before is better",he:"לפני יותר טוב"}, pickAfter:{en:"After is better",he:"אחרי יותר טוב"},
  fixAgain:{en:"Fix more",he:"לתקן עוד"},
@@ -270,8 +295,10 @@ var IC={
 };
 function bar(opts){opts=opts||{};return '<div class="bar">'+(opts.back?'<button class="iconbtn" id="back" aria-label="'+esc(t("back"))+'">'+IC.back+'</button>':'')+'<div class="grow">'+(opts.title||"")+'</div>'+(opts.gear?'<button class="iconbtn" id="gear" aria-label="'+esc(t("parents"))+'">'+IC.gear+'</button>':'')+'<div class="lang"><button data-lang="en" aria-pressed="'+(S.lang==="en")+'">EN</button><button data-lang="he" aria-pressed="'+(S.lang==="he")+'">עב</button></div></div>'}
 function boltLine(text){return '<div class="bolt"><div class="face" id="face"><img src="assets/bolt-face.jpg" alt=""></div><div class="say" id="say">'+esc(text)+'</div><button class="hear" data-say="'+esc(text)+'" aria-label="hear">'+IC.speak+'</button></div>'}
+function boltMini(text){return '<div class="bolt compact"><div class="face" id="face"><img src="assets/bolt-face.jpg" alt=""></div><div class="say" id="say">'+esc(text)+'</div><button class="hear" data-say="'+esc(text)+'" aria-label="hear">'+IC.speak+'</button></div>'}
+function chipRow(v){var h='<div class="chiprow">';(v.understood||[]).forEach(function(u){h+='<button class="pill '+(u.guessed?"guess":"said")+'" data-say="'+esc((u.guessed?t("guessed"):t("said"))+": "+u.text)+'">'+(u.guessed?"🎲 ":"✓ ")+esc(u.text)+'</button>'});(v.applied||[]).forEach(function(a){h+='<button class="pill rule" data-say="'+esc(a)+'">📘 '+esc(a)+'</button>'});return h+'</div>'}
 function starRow(n){var s="";for(var i=1;i<=3;i++)s+=i<=n?"★":'<span class="off">★</span>';return '<span class="stars">'+s+'</span>'}
-function render(html,after){var a=$("#app");a.innerHTML='<div class="screen">'+html+'</div><div class="ver">v'+VERSION+'</div>';window.scrollTo(0,0);
+function render(html,after,cls){var a=$("#app");a.innerHTML='<div class="screen'+(cls?" "+cls:"")+'">'+html+'</div>'+(cls?'':'<div class="ver">v'+VERSION+'</div>');window.scrollTo(0,0);
  onAll("[data-lang]",function(el){setLang(el.getAttribute("data-lang"))});
  onAll("[data-say]",function(el){say(el.getAttribute("data-say"))});
  if(after)after()}
@@ -310,36 +337,45 @@ function listen(ui,onDone){
  stopVoice();
  if(!canRecord()||!S.api)return listenDevice(ui,onDone);
  var base=ui.get();
- navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}).then(function(stream){
+ navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:false,autoGainControl:true,channelCount:1}}).then(function(stream){
   var stopMeter=meter(stream,ui),finished=false;
+  // A full recording runs alongside the live words. When she finishes, a second, stronger listener
+  // re-reads the whole sentence and its version replaces the live guess.
+  var mime=window.MediaRecorder?(["audio/webm;codecs=opus","audio/webm","audio/mp4"].filter(function(m){return MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m)})[0]||""):null,parts=[],mrec=null;
+  if(mime!==null){try{mrec=new MediaRecorder(stream,mime?{mimeType:mime}:{});mrec.ondataavailable=function(e){if(e.data&&e.data.size)parts.push(e.data)};mrec.start()}catch(e){mrec=null}}
+  function recording(){return new Promise(function(res){if(!mrec||mrec.state==="inactive")return res(null);mrec.onstop=function(){res(new Blob(parts,{type:mrec.mimeType||mime||"audio/webm"}))};try{mrec.stop()}catch(e){res(null)}})}
   function cleanup(){stopMeter();stream.getTracks().forEach(function(tr){tr.stop()});REC=null;ui.state("idle")}
+  function finish(liveText){
+   ui.state("busy");
+   recording().then(function(blob){
+    if(!blob||blob.size<1500)return null;
+    return blobToData(blob).then(function(d){return api("/api/hear",{audio:d.split(",")[1],lang:S.lang,prompt:($("#say")&&$("#say").textContent)||""})}).then(function(r){return (r&&r.text||"").trim()}).catch(function(){return null});
+   }).then(function(better){
+    var live=(liveText||"").trim();
+    var pick=better&&(!live||better.length>=live.length*0.5)?better:live;
+    stream.getTracks().forEach(function(tr){tr.stop()});stopMeter();REC=null;ui.state("idle");
+    ui.set((base?base+" ":"")+pick,"");
+    if(!pick)toast(t("notHeard"));
+    onDone&&onDone(ui.get());
+   });
+  }
   ui.state("live");
   Promise.all([loadSDK(),getToken()]).then(function(x){
    var SDK=x[0],tk=x[1],cfg=SDK.SpeechConfig.fromAuthorizationToken(tk.token,tk.region);cfg.speechRecognitionLanguage=S.lang==="he"?"he-IL":"en-US";
-   var rec=new SDK.SpeechRecognizer(cfg,SDK.AudioConfig.fromStreamInput(stream)),finals=[],silence=null;
-   function show(interim){ui.set((base?base+" ":"")+finals.join(" "),interim)}
-   function arm(){clearTimeout(silence);silence=setTimeout(function(){REC&&REC.stop()},finals.length?3500:9000)}
+   var rec=new SDK.SpeechRecognizer(cfg,SDK.AudioConfig.fromStreamInput(stream)),finals=[],silence=null,lastInterim="";
+   function show(interim){lastInterim=interim||"";ui.set((base?base+" ":"")+finals.join(" "),interim)}
+   function arm(){clearTimeout(silence);silence=setTimeout(function(){REC&&REC.stop()},finals.length?4000:9000)}
    rec.recognizing=function(_,e){show(e.result.text);arm()};
    rec.recognized=function(_,e){if(e.result.reason===SDK.ResultReason.RecognizedSpeech&&e.result.text){finals.push(e.result.text);show("")}arm()};
    rec.canceled=function(){REC&&REC.stop()};
-   REC={stop:function(){if(finished)return;finished=true;clearTimeout(silence);ui.state("busy");rec.stopContinuousRecognitionAsync(function(){try{rec.close()}catch(e){}cleanup();show("");onDone&&onDone(ui.get())},function(){cleanup();onDone&&onDone(ui.get())})}};
-   rec.startContinuousRecognitionAsync(function(){arm()},function(){finished=true;cleanup();recordFallback(ui,onDone)});
-  }).catch(function(){cleanup();recordFallback(ui,onDone)});
+   REC={stop:function(){if(finished)return;finished=true;clearTimeout(silence);var live=(finals.join(" ")+" "+lastInterim).trim();ui.set(base,"");try{rec.stopContinuousRecognitionAsync(function(){try{rec.close()}catch(e){}},function(){})}catch(e){}finish(live)}};
+   rec.startContinuousRecognitionAsync(function(){arm()},function(){REC={stop:function(){if(finished)return;finished=true;finish("")}};});
+  }).catch(function(){
+   // Live words unavailable: keep recording, the stronger listener still transcribes at the end.
+   REC={stop:function(){if(finished)return;finished=true;finish("")}};
+   setTimeout(function(){REC&&REC.stop()},30000);
+  });
  }).catch(function(){toast(t("micBlocked"));listenDevice(ui,onDone)});
-}
-// Backup when live listening cannot connect: record, then Bolt transcribes the whole sentence.
-function recordFallback(ui,onDone){
- if(!window.MediaRecorder)return listenDevice(ui,onDone);
- navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
-  var mime=["audio/webm;codecs=opus","audio/webm","audio/mp4"].filter(function(m){return MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m)})[0]||"",rec=new MediaRecorder(stream,mime?{mimeType:mime}:{}),parts=[],stopMeter=meter(stream,ui),timer;
-  REC={stop:function(){clearTimeout(timer);try{rec.stop()}catch(e){}}};
-  rec.ondataavailable=function(e){if(e.data&&e.data.size)parts.push(e.data)};
-  rec.onstop=function(){stopMeter();stream.getTracks().forEach(function(tr){tr.stop()});REC=null;var blob=new Blob(parts,{type:rec.mimeType||mime||"audio/webm"});
-   if(blob.size<1500){ui.state("idle");return}
-   ui.state("busy");ui.set(ui.get(),t("hearing"));
-   blobToData(blob).then(function(d){return api("/api/hear",{audio:d.split(",")[1],lang:S.lang})}).then(function(r){var txt=(r&&r.text||"").trim();ui.state("idle");if(!txt){ui.set(ui.get(),"");toast(t("notHeard"));return}ui.set((ui.get()?ui.get()+" ":"")+txt,"");onDone&&onDone(ui.get())}).catch(function(){ui.state("idle");ui.set(ui.get(),"");toast(t("notHeard"))})};
-  rec.start();ui.state("live");timer=setTimeout(function(){REC&&REC.stop()},30000);
- }).catch(function(){toast(t("micBlocked"))});
 }
 function listenDevice(ui,onDone){
  var R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){toast(t("micBlocked"));return}
@@ -484,30 +520,36 @@ function draw(step,text,r){
 function chips(v){var h='<div class="pills">';(v.understood||[]).forEach(function(u){h+='<button class="pill '+(u.guessed?"guess":"said")+'" data-say="'+esc(u.text)+'">'+(u.guessed?"🎲 ":"✓ ")+esc(u.text)+'</button>'});(v.applied||[]).forEach(function(a){h+='<button class="pill rule" data-say="'+esc(a)+'">📘 '+esc(a)+'</button>'});return h+'</div><div class="legend"><span><i style="background:var(--mint)"></i>'+esc(t("said"))+'</span><span><i style="background:var(--saffron)"></i>'+esc(t("guessed"))+'</span>'+((v.applied||[]).length?'<span><i style="background:var(--violet)"></i>'+esc(t("yourRule"))+'</span>':'')+'</div>'}
 function result(){
  S.redraw=result;var v=S.v[S.v.length-1];
- render(bar({back:true})+'<div class="pic reveal"><img alt="" src="'+v.img+'"></div>'+boltLine(v.bolt)+chips(v)+
-  '<div class="card"><div class="row" style="align-items:center"><span>'+starRow(v.stars)+'</span><span class="small" style="flex:3">'+esc(v.tip)+'</span><button class="hear" data-say="'+esc(v.tip)+'">'+IC.speak+'</button></div></div>'+
-  '<h2>'+esc(t("check"))+'</h2><div class="row"><button class="btn mint" id="keep">'+esc(t("yes"))+'</button><button class="btn primary" id="fix">'+esc(t("fixIt"))+'</button></div>',function(){
+ render(bar({back:true})+'<div class="stagepic reveal"><img alt="" src="'+v.img+'"><span class="stars">'+starRow(v.stars)+'</span></div>'+boltMini(v.bolt)+chipRow(v)+
+  (v.tip?'<div class="tipline"><span>💡 '+esc(v.tip)+'</span><button class="hear" data-say="'+esc(v.tip)+'">'+IC.speak+'</button></div>':'')+
+  '<div class="ask">'+esc(t("check"))+'</div><div class="actions"><button class="btn mint" id="keep">'+esc(t("yes"))+'</button><button class="btn primary" id="fix">'+esc(t("fixIt"))+'</button></div>',function(){
   on("#back",hub);
   say(v.bolt).then(function(){if(S.redraw===result)return say(t("check"))});
-  on("#keep",function(){say(t("yes"));nameIt(v)});on("#fix",function(){say(t("fixIt"));fix()})})
+  on("#keep",function(){say(t("yes"));nameIt(v)});on("#fix",function(){say(t("fixIt"));fix()})},"stage")
 }
 function fix(){
  S.redraw=fix;var v=S.v[S.v.length-1];
- render(bar({back:true})+'<div class="pic" style="max-height:38vh;aspect-ratio:auto"><img alt="" src="'+v.img+'" style="max-height:38vh"></div>'+boltLine(t("whatFix"))+talkBox()+'<button class="btn primary" id="send" disabled>'+esc(t("send"))+'</button>',function(){
+ render(bar({back:true})+'<div class="stagepic" style="flex:0 1 30vh"><img alt="" src="'+v.img+'"></div>'+boltMini(t("whatFix"))+talkBox()+'<div class="actions"><button class="btn primary" id="send" disabled>'+esc(t("send"))+'</button></div>',function(){
   on("#back",result);say(t("whatFix"));wireTalk(function(x){$("#send").disabled=!x});
-  on("#send",function(){var x=$("#box").value.trim();if(REC)try{REC.stop()}catch(e){}addXP(15);badge("b_eye");run("fix",x)})})
+  on("#send",function(){var x=$("#box").value.trim();if(REC)try{REC.stop()}catch(e){}addXP(15);badge("b_eye");run("fix",x)})},"stage")
 }
+// Before / after: tap a side, tap the picture, or swipe. No slider, so no left-right confusion in Hebrew.
 function compare(){
  S.redraw=compare;var a=S.v[S.v.length-2],b=S.v[S.v.length-1];
- render(bar({back:true})+'<div class="pic cmp"><img alt="" src="'+b.img+'"><div class="top"><img alt="" src="'+a.img+'"></div><div class="handle" id="hd"></div><span class="tag">'+esc(t("before"))+'</span><span class="tag r">'+esc(t("after"))+'</span><input type="range" min="0" max="100" value="50" id="sl" aria-label="compare"></div>'+
-  boltLine(b.bolt)+chips(b)+'<h2>'+esc(t("which"))+'</h2><div class="row"><button class="btn ghost" id="pa">'+esc(t("pickBefore"))+'</button><button class="btn mint" id="pb">'+esc(t("pickAfter"))+'</button></div>'+(S.v.length<4?'<button class="btn primary" id="more">'+esc(t("fixAgain"))+'</button>':''),function(){
-  var rtl=S.lang==="he",sl=$("#sl"),top=$(".cmp .top"),hd=$("#hd");
-  function upd(){var p=+sl.value;if(rtl){top.style.clipPath="inset(0 0 0 "+p+"%)";hd.style.left=p+"%"}else{top.style.clipPath="inset(0 "+(100-p)+"% 0 0)";hd.style.left=p+"%"}}
-  sl.addEventListener("input",upd);upd();
+ render(bar({back:true})+'<div class="stagepic" id="cmp"><img alt="" id="ia" class="hide" src="'+a.img+'"><img alt="" id="ib" src="'+b.img+'"><span class="tag" id="cl">'+esc(t("after"))+'</span></div>'+
+  '<div class="toggle"><button id="tb" aria-pressed="false">'+esc(t("before"))+'</button><button id="ta" aria-pressed="true">'+esc(t("after"))+'</button></div>'+
+  boltMini(b.bolt)+chipRow(b)+'<div class="ask">'+esc(t("which"))+'</div><div class="actions"><button class="btn ghost" id="pa">'+esc(t("pickBefore"))+'</button><button class="btn mint" id="pb">'+esc(t("pickAfter"))+'</button></div>'+
+  (S.v.length<4?'<button class="linkbtn" id="more" style="flex:0 0 auto">'+esc(t("fixAgain"))+'</button>':''),function(){
+  var showingAfter=true;
+  function show(after){showingAfter=after;$("#ib").classList.toggle("hide",!after);$("#ia").classList.toggle("hide",after);$("#cl").textContent=after?t("after"):t("before");$("#ta").setAttribute("aria-pressed",after);$("#tb").setAttribute("aria-pressed",!after)}
+  on("#tb",function(){show(false);say(t("before"))});on("#ta",function(){show(true);say(t("after"))});
+  var pic=$("#cmp"),x0=null;pic.addEventListener("click",function(){show(!showingAfter)});
+  pic.addEventListener("touchstart",function(e){x0=e.touches[0].clientX},{passive:true});
+  pic.addEventListener("touchend",function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>40)show(!showingAfter)});
   on("#back",hub);say(b.bolt).then(function(){if(S.redraw===compare)return say(t("which"))});
   on("#pa",function(){say(t("pickBefore"));nameIt(a)});
   on("#pb",function(){say(t("pickAfter"));nameIt(b)});
-  on("#more",function(){say(t("fixAgain"));fix()})})
+  on("#more",function(){say(t("fixAgain"));fix()})},"stage")
 }
 function nameIt(v){
  S.redraw=null;

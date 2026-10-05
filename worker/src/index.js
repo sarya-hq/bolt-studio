@@ -155,7 +155,11 @@ export default {
       if (url.pathname === "/api/hear" && req.method === "POST") {
         const b = await req.json();
         if (!b.audio || b.audio.length > 4_000_000) return json(req, { error: "no audio" }, 400);
-        const out = await env.AI.run("@cf/openai/whisper-large-v3-turbo", { audio: b.audio, language: b.lang === "he" ? "he" : "en", vad_filter: true });
+        const base = { audio: b.audio, language: b.lang === "he" ? "he" : "en", vad_filter: true };
+        // The question Bolt just asked steers the listener toward the words a child is likely to use.
+        let out;
+        try { out = await env.AI.run("@cf/openai/whisper-large-v3-turbo", b.prompt ? { ...base, initial_prompt: clip(b.prompt, 300) } : base); }
+        catch (e) { out = await env.AI.run("@cf/openai/whisper-large-v3-turbo", base); }
         return json(req, { text: clip(out && out.text, 600).trim() });
       }
       if (url.pathname === "/api/speak" && req.method === "POST") {
