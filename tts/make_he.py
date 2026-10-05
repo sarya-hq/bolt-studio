@@ -1,21 +1,19 @@
-import json,base64,subprocess,torch,scipy.io.wavfile as w
-from transformers import VitsModel, AutoTokenizer
+# Hebrew voice: Microsoft neural voice (he-IL-HilaNeural) via edge-tts.
+import json,base64,asyncio,edge_tts
 items=json.load(open("tts/he.json"))
-tok=AutoTokenizer.from_pretrained("facebook/mms-tts-heb");m=VitsModel.from_pretrained("facebook/mms-tts-heb")
-m.config.speaking_rate=0.95
-ur=None
-if getattr(tok,"is_uroman",False):
-    import uroman as U; ur=U.Uroman()
-out={}
-for k,text in items.items():
-    t=ur.romanize_string(text) if ur else text
-    inp=tok(t,return_tensors="pt")
-    if inp["input_ids"].shape[-1]==0: print("skip",k);continue
-    torch.manual_seed(1)
-    with torch.no_grad(): a=m(**inp).waveform[0].numpy()
-    w.write("x.wav",m.config.sampling_rate,a)
-    subprocess.run(["ffmpeg","-loglevel","error","-y","-i","x.wav","-ac","1","-b:a","32k","x.mp3"],check=True)
-    out[k]="data:audio/mpeg;base64,"+base64.b64encode(open("x.mp3","rb").read()).decode()
-    print("ok",k[:30])
-json.dump(out,open("assets/he-voice.json","w"))
-print("total",len(out))
+VOICE="he-IL-HilaNeural"
+async def one(text,path):
+    await edge_tts.Communicate(text,VOICE,rate="-6%").save(path)
+async def main():
+    out={}
+    for k,text in items.items():
+        for attempt in range(3):
+            try:
+                await one(text,"x.mp3");break
+            except Exception as e:
+                print("retry",k[:20],e);await asyncio.sleep(2)
+        out[k]="data:audio/mpeg;base64,"+base64.b64encode(open("x.mp3","rb").read()).decode()
+        print("ok",k[:30])
+    json.dump(out,open("assets/he-voice.json","w"))
+    print("total",len(out))
+asyncio.run(main())
