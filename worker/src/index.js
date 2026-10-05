@@ -170,18 +170,21 @@ function voiceHebrew(text, g) {
 }
 // Hebrew: ElevenLabs "Tamar", chosen by ear (2026-10-05). Azure stays as English voice and as backup.
 const HE_VOICE = "p7J75VowGmxi3K0it9lN";
-async function speakEleven(env, text) {
-  const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${HE_VOICE}?output_format=mp3_44100_128`, {
+// English: ElevenLabs "Alice" (clear, warm educator) until a voice is picked by ear.
+const EN_VOICE = "Xb7hH8MSUJpSbSDYk0k2";
+async function speakEleven(env, text, lang) {
+  const he = lang === "he";
+  const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${he ? HE_VOICE : EN_VOICE}?output_format=mp3_44100_128`, {
     method: "POST",
     headers: { "xi-api-key": env.ELEVENLABS_API_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({ text, model_id: "eleven_v3", language_code: "he" }),
+    body: JSON.stringify(he ? { text, model_id: "eleven_v3", language_code: "he" } : { text, model_id: "eleven_multilingual_v2" }),
   });
   if (!r.ok) throw new Error("eleven " + r.status);
   return r.arrayBuffer();
 }
 async function speak(env, text, lang) {
-  if (lang === "he" && env.ELEVENLABS_API_KEY) {
-    try { return await speakEleven(env, text); } catch (e) { console.log("eleven failed, using Azure", e.message); }
+  if (env.ELEVENLABS_API_KEY) {
+    try { return await speakEleven(env, text, lang); } catch (e) { console.log("eleven failed, using Azure", e.message); }
   }
   const [xl, voice, style, rate] = VOICES[lang === "he" ? "he" : "en"];
   let inner = `<prosody rate="${rate}">${esc(text)}</prosody>`;
@@ -248,7 +251,7 @@ export default {
         const text = clip(b.text, 400).trim();
         if (!text) return json(req, { error: "no text" }, 400);
         const g = b.g === "f" || b.g === "m" ? b.g : "x";
-        const key = new Request("https://cache.bolt/v3/" + (b.lang === "he" ? "he" : "en") + "/" + g + "/" + encodeURIComponent(text));
+        const key = new Request("https://cache.bolt/v4/" + (b.lang === "he" ? "he" : "en") + "/" + g + "/" + encodeURIComponent(text));
         const cache = caches.default;
         const hit = await cache.match(key);
         if (hit) return new Response(hit.body, { headers: { "Content-Type": "audio/mpeg", ...cors(req) } });
