@@ -1,11 +1,12 @@
-name: Record Hebrew voice
+name: Record Bolt voice
 on:
   push:
     branches: [main]
-    paths: [tts/he.json, tts/make_he.py]
+    paths: [tts/he.json, tts/en.json, tts/make_voice.py]
   workflow_dispatch:
 permissions:
   contents: write
+  actions: write
 jobs:
   record:
     runs-on: ubuntu-latest
@@ -15,12 +16,16 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -q edge-tts
-      - run: python tts/make_he.py
+      - run: python tts/make_voice.py
       - name: Commit voice
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git add assets/he-voice.json
-          git diff --cached --quiet || git commit -m "Record Hebrew voice"
+          git add assets/he-voice.json assets/en-voice.json
+          git diff --cached --quiet || git commit -m "Record Bolt voice"
           git pull --rebase -q origin main
           git push
+      - name: Publish the app with the new voice
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main
