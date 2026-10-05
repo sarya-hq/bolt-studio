@@ -168,7 +168,21 @@ function voiceHebrew(text, g) {
     return w;
   });
 }
+// Hebrew: ElevenLabs "Tamar", chosen by ear (2026-10-05). Azure stays as English voice and as backup.
+const HE_VOICE = "p7J75VowGmxi3K0it9lN";
+async function speakEleven(env, text) {
+  const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${HE_VOICE}?output_format=mp3_44100_128`, {
+    method: "POST",
+    headers: { "xi-api-key": env.ELEVENLABS_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ text, model_id: "eleven_v3", language_code: "he" }),
+  });
+  if (!r.ok) throw new Error("eleven " + r.status);
+  return r.arrayBuffer();
+}
 async function speak(env, text, lang) {
+  if (lang === "he" && env.ELEVENLABS_API_KEY) {
+    try { return await speakEleven(env, text); } catch (e) { console.log("eleven failed, using Azure", e.message); }
+  }
   const [xl, voice, style, rate] = VOICES[lang === "he" ? "he" : "en"];
   let inner = `<prosody rate="${rate}">${esc(text)}</prosody>`;
   if (style) inner = `<mstts:express-as style="${style}">${inner}</mstts:express-as>`;
@@ -234,7 +248,7 @@ export default {
         const text = clip(b.text, 400).trim();
         if (!text) return json(req, { error: "no text" }, 400);
         const g = b.g === "f" || b.g === "m" ? b.g : "x";
-        const key = new Request("https://cache.bolt/v2/" + (b.lang === "he" ? "he" : "en") + "/" + g + "/" + encodeURIComponent(text));
+        const key = new Request("https://cache.bolt/v3/" + (b.lang === "he" ? "he" : "en") + "/" + g + "/" + encodeURIComponent(text));
         const cache = caches.default;
         const hit = await cache.match(key);
         if (hit) return new Response(hit.body, { headers: { "Content-Type": "audio/mpeg", ...cors(req) } });
