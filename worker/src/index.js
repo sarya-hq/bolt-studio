@@ -161,7 +161,7 @@ export default {
       return json(req, { error: "not found" }, 404);
     } catch (e) {
       console.log("error", url.pathname, e && e.message);
-      return json(req, { error: "bolt_hiccup" }, 502);
+      return json(req, { error: "bolt_hiccup", detail: String((e && e.message) || e).slice(0, 300) }, 502);
     }
   },
 };
