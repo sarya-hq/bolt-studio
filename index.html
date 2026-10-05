@@ -68,6 +68,7 @@ html[lang="he"] .over{letter-spacing:0}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;font-size:15px;font-weight:600;border:1px solid var(--line);background:rgba(255,255,255,.05);cursor:pointer;color:var(--ink);font-family:var(--font)}
 .pill.said{background:rgba(60,207,176,.14);border-color:rgba(60,207,176,.5)}
 .pill.guess{background:rgba(244,201,93,.13);border-color:rgba(244,201,93,.55)}
+.pill.out{opacity:.6;text-decoration:line-through;text-decoration-thickness:1px}
 .pill.rule{background:rgba(139,123,255,.16);border-color:rgba(139,123,255,.55)}
 .pills{display:flex;flex-wrap:wrap;gap:8px}
 .legend{display:flex;gap:14px;font-size:13px;color:var(--soft);flex-wrap:wrap}
@@ -182,7 +183,7 @@ td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:start;verti
 <div id="app"></div>
 <audio id="voice" playsinline preload="auto"></audio>
 <script>
-var VERSION="20";
+var VERSION="21";
 /* ---------- words ---------- */
 // he: string, or [girl, boy] when it changes with the child's gender. Bolt herself is always female.
 var W={
@@ -309,7 +310,7 @@ var IC={
 function bar(opts){opts=opts||{};return '<div class="bar">'+(opts.back?'<button class="iconbtn" id="back" aria-label="'+esc(t("back"))+'">'+IC.back+'</button>':'')+'<div class="grow">'+(opts.title||"")+'</div>'+(opts.gear?'<button class="iconbtn" id="gear" aria-label="'+esc(t("parents"))+'">'+IC.gear+'</button>':'')+'<div class="lang"><button data-lang="en" aria-pressed="'+(S.lang==="en")+'">EN</button><button data-lang="he" aria-pressed="'+(S.lang==="he")+'">עב</button></div></div>'}
 function boltLine(text){return '<div class="bolt"><div class="face" id="face"><img src="assets/bolt-face.jpg" alt=""></div><div class="say" id="say">'+esc(text)+'</div><button class="hear" data-say="'+esc(text)+'" aria-label="hear">'+IC.speak+'</button></div>'}
 function boltMini(text){return '<div class="bolt compact"><div class="face" id="face"><img src="assets/bolt-face.jpg" alt=""></div><div class="say" id="say">'+esc(text)+'</div><button class="hear" data-say="'+esc(text)+'" aria-label="hear">'+IC.speak+'</button></div>'}
-function chipRow(v){var h='<div class="chiprow">';(v.understood||[]).forEach(function(u){h+='<button class="pill '+(u.guessed?"guess":"said")+'" data-say="'+esc((u.guessed?t("guessed"):t("said"))+": "+u.text)+'">'+(u.guessed?"🎲 ":"✓ ")+esc(u.text)+'</button>'});(v.applied||[]).forEach(function(a){h+='<button class="pill rule" data-say="'+esc(a)+'">📘 '+esc(a)+'</button>'});return h+'</div>'}
+function chipRow(v){var h='<div class="chiprow">';(v.left_out||[]).forEach(function(x){h+='<button class="pill out" data-say="'+esc(x)+'">⏸ '+esc(x)+'</button>'});(v.understood||[]).forEach(function(u){h+='<button class="pill '+(u.guessed?"guess":"said")+'" data-say="'+esc((u.guessed?t("guessed"):t("said"))+": "+u.text)+'">'+(u.guessed?"🎲 ":"✓ ")+esc(u.text)+'</button>'});(v.applied||[]).forEach(function(a){h+='<button class="pill rule" data-say="'+esc(a)+'">📘 '+esc(a)+'</button>'});return h+'</div>'}
 function starRow(n){var s="";for(var i=1;i<=3;i++)s+=i<=n?"★":'<span class="off">★</span>';return '<span class="stars">'+s+'</span>'}
 function render(html,after,cls){var a=$("#app");a.innerHTML='<div class="screen'+(cls?" "+cls:"")+'">'+html+'</div>'+(cls?'':'<div class="ver">v'+VERSION+'</div>');window.scrollTo(0,0);
  onAll("[data-lang]",function(el){setLang(el.getAttribute("data-lang"))});
@@ -523,7 +524,7 @@ function draw(step,text,r){
  thinking(t("drawing"),true);say(r.bolt_says);
  api("/api/draw",{prompt:r.image_prompt,age:kid().age}).then(blobToData).then(function(img){
   var k=kid();
-  S.v.push({img:img,understood:r.understood,prompt:r.image_prompt,said:text,stars:r.stars,bolt:r.bolt_says,tip:r.tip,applied:r.applied_rules||[],step:step});
+  S.v.push({img:img,left_out:r.left_out||[],understood:r.understood,prompt:r.image_prompt,said:text,stars:r.stars,bolt:r.bolt_says,tip:r.tip,applied:r.applied_rules||[],step:step});
   k.stars.push(Math.max(1,Math.min(3,r.stars|0)));if(k.stars.length>40)k.stars.shift();
   addXP(5*Math.max(1,Math.min(3,r.stars|0)));if(r.stars>=3&&step==="brief")badge("b_clear");
   k.log.push({at:new Date().toISOString(),mission:S.mission,step:step,said:text,stars:r.stars,guessed:(r.understood||[]).filter(function(u){return u.guessed}).length,rule:r.rule||"",lang:S.lang});if(k.log.length>200)k.log.shift();
