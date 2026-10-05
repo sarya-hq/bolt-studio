@@ -116,10 +116,26 @@ async function think(env, b) {
   return JSON.parse(text);
 }
 
-async function draw(env, prompt, age) {
-  const out = await env.AI.run(IMAGE_MODEL, { prompt: clip(prompt, 1800) + " " + (Number(age) >= 12 ? STYLE_TEEN : STYLE_KID), steps: 6 });
-  const bin = Uint8Array.from(atob(out.image), (c) => c.charCodeAt(0));
-  return bin;
+const ENGINES = {
+  "flux-schnell": { model: "@cf/black-forest-labs/flux-1-schnell", input: (p) => ({ prompt: p, steps: 6 }) },
+  "flux-2-dev": { model: "@cf/black-forest-labs/flux-2-dev", form: true },
+  "flux-2-klein": { model: "@cf/black-forest-labs/flux-2-klein-4b", form: true },
+  "lucid-origin": { model: "@cf/leonardo/lucid-origin", input: (p) => ({ prompt: p, width: 1024, height: 1024 }) },
+  "phoenix": { model: "@cf/leonardo/phoenix-1.0", input: (p) => ({ prompt: p, width: 1024, height: 1024 }) },
+};
+async function draw(env, prompt, age, engine) {
+  const e = ENGINES[engine] || ENGINES[env.IMAGE_ENGINE] || ENGINES["flux-schnell"];
+  const full = clip(prompt, 1800) + " " + (Number(age) >= 12 ? STYLE_TEEN : STYLE_KID);
+  let input;
+  if (e.form) {
+    const fd = new FormData(); fd.append("prompt", full); fd.append("width", "1024"); fd.append("height", "1024");
+    const r = new Response(fd); input = { multipart: { body: r.body, contentType: r.headers.get("content-type") } };
+  } else input = e.input(full);
+  const out = await env.AI.run(e.model, input);
+  if (out && typeof out.image === "string") return Uint8Array.from(atob(out.image), (c) => c.charCodeAt(0));
+  if (out instanceof ReadableStream) return new Uint8Array(await new Response(out).arrayBuffer());
+  if (out instanceof ArrayBuffer || ArrayBuffer.isView(out)) return new Uint8Array(out.buffer || out);
+  throw new Error("unknown image output " + Object.keys(out || {}).join(","));
 }
 
 const VOICES = { he: ["he-IL", "he-IL-HilaNeural", null, "-3%"], en: ["en-US", "en-US-JennyNeural", "friendly", "+0%"] };
@@ -163,7 +179,7 @@ export default {
       if (url.pathname === "/api/draw" && req.method === "POST") {
         const b = await req.json();
         if (!b.prompt) return json(req, { error: "no prompt" }, 400);
-        const img = await draw(env, b.prompt, b.age);
+        const img = await draw(env, b.prompt, b.age, b.engine);
         return new Response(img, { headers: { "Content-Type": "image/jpeg", ...cors(req) } });
       }
       if (url.pathname === "/api/listen-token" && req.method === "POST") {
