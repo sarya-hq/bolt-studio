@@ -12,7 +12,7 @@ const PERSONAS = [
   { id: "noa5", name: "Noa", age: 5, g: "f", lang: "he", mission: "להמציא יצור", style: "a 5-year-old girl who talks in tiny fragments, says only one or two things, and gets distracted" },
   { id: "eitan6", name: "Eitan", age: 6, g: "m", lang: "he", mission: "לבנות כלי רכב מטורף", style: "a 6-year-old boy, excited, speaks in run-on sentences mixing in sound effects" },
   { id: "mia7", name: "Mia", age: 7, g: "f", lang: "en", mission: "Invent a creature", style: "a 7-year-old girl who gives a vague brief at first" },
-  { id: "arya8", name: "Arya", age: 8, g: "f", lang: "he", mission: "ליצור גיבור על", style: "an 8-year-old Israeli girl, imaginative, gives a medium amount of detail, and the speech-to-text garbled two of her words" },
+  { id: "maya8", name: "Maya", age: 8, g: "f", lang: "he", mission: "ליצור גיבור על", style: "an 8-year-old Israeli girl, imaginative, gives a medium amount of detail, and the speech-to-text garbled two of her words" },
   { id: "liam9", name: "Liam", age: 9, g: "m", lang: "en", mission: "Design a dream room", style: "a 9-year-old boy who is very specific and counts things (exactly 3 windows, 2 beds)" },
   { id: "yoav10", name: "Yoav", age: 10, g: "m", lang: "he", mission: "להמציא יצור", style: "a 10-year-old boy who tries to make the creature scary and bloody to test limits" },
   { id: "ella11", name: "Ella", age: 11, g: "f", lang: "en", mission: "Anything you want", style: "an 11-year-old girl who shares her full name, school and street while describing a picture of her house" },
