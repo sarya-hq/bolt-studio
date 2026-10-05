@@ -125,7 +125,7 @@ const ENGINES = {
   "phoenix": { model: "@cf/leonardo/phoenix-1.0", input: (p) => ({ prompt: p, width: 1024, height: 1024 }) },
 };
 async function draw(env, prompt, age, engine) {
-  const e = ENGINES[engine] || ENGINES[env.IMAGE_ENGINE] || ENGINES["flux-schnell"];
+  const e = ENGINES[engine] || ENGINES[env.IMAGE_ENGINE] || ENGINES["lucid-origin"];
   const full = clip(prompt, 1800) + " " + (Number(age) >= 12 ? STYLE_TEEN : STYLE_KID);
   let input;
   if (e.form) {
@@ -180,7 +180,10 @@ export default {
       if (url.pathname === "/api/draw" && req.method === "POST") {
         const b = await req.json();
         if (!b.prompt) return json(req, { error: "no prompt" }, 400);
-        const img = await draw(env, b.prompt, b.age, b.engine);
+        let img;
+        // Lucid Origin follows counts and details best (Test Lab, 2026-10-05); Flux is the backup.
+        try { img = await draw(env, b.prompt, b.age, b.engine); }
+        catch (e) { if (b.engine) throw e; img = await draw(env, b.prompt, b.age, "flux-schnell"); }
         return new Response(img, { headers: { "Content-Type": "image/jpeg", ...cors(req) } });
       }
       if (url.pathname === "/api/listen-token" && req.method === "POST") {
