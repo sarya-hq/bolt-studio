@@ -1,0 +1,27 @@
+name: Check Bolt end to end
+on: workflow_dispatch
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Health, think, draw, speak
+        run: |
+          U=$(python3 -c "import json;print(json.load(open('api.json'))['url'])")
+          O="Origin: https://sarya-hq.github.io"
+          echo "== health"; curl -sS "$U/api/health"; echo
+          echo "== think (Hebrew, girl, 7)"
+          curl -sS -m 60 -H "$O" -H "Content-Type: application/json" -X POST "$U/api/think" \
+            -d '{"lang":"he","kid":{"name":"Arya","g":"f","age":7},"step":"brief","mission":"להמציא יצור","text":"דרקון קטן שנושף בועות","rules":[]}' | tee think.json; echo
+          P=$(python3 -c "import json;print(json.load(open('think.json')).get('image_prompt',''))")
+          echo "== draw"
+          python3 -c "import json,sys;print(json.dumps({'prompt':sys.argv[1]}))" "$P" > draw.json
+          curl -sS -m 60 -H "$O" -H "Content-Type: application/json" -X POST "$U/api/draw" -d @draw.json -o pic.jpg -w "status %{http_code} bytes %{size_download} type %{content_type}\n"
+          echo "== speak"
+          curl -sS -m 30 -H "$O" -H "Content-Type: application/json" -X POST "$U/api/speak" -d '{"text":"שלום, אני בולט","lang":"he"}' -o s.mp3 -w "status %{http_code} bytes %{size_download} type %{content_type}\n"
+          echo "== think (English, boy, 10, fix)"
+          curl -sS -m 60 -H "$O" -H "Content-Type: application/json" -X POST "$U/api/think" \
+            -d '{"lang":"en","kid":{"name":"Noam","g":"m","age":10},"step":"fix","mission":"Invent a creature","text":"it should have four legs and be purple","rules":["Always add a hat"],"prev":{"understood":[{"text":"a dragon","guessed":false}],"prompt":"a small green dragon"}}'; echo
+      - uses: actions/upload-artifact@v4
+        with: { name: sample, path: worker/../pic.jpg }
