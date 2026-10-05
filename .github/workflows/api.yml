@@ -26,9 +26,15 @@ jobs:
           [ -n "$CLOUDFLARE_API_TOKEN" ] || missing="$missing CLOUDFLARE_API_TOKEN"
           [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || missing="$missing CLOUDFLARE_ACCOUNT_ID"
           if [ -n "$missing" ]; then echo "::error::Missing GitHub secrets:$missing"; exit 1; fi
+          # Accept the account ID however it was pasted (bare, inside a dashboard link, with spaces).
+          acc=$(printf '%s' "$CLOUDFLARE_ACCOUNT_ID" | grep -oiE '[0-9a-f]{32}' | head -1)
+          if [ -n "$acc" ]; then echo "::add-mask::$acc"; echo "CLOUDFLARE_ACCOUNT_ID=$acc" >> "$GITHUB_ENV"; else echo "Account ID not recognised; letting Wrangler find it from the token"; echo "CLOUDFLARE_ACCOUNT_ID=" >> "$GITHUB_ENV"; fi
       - run: npm ci
       - name: Deploy
-        run: npx wrangler deploy 2>&1 | tee deploy.log
+        run: |
+          set -o pipefail
+          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || unset CLOUDFLARE_ACCOUNT_ID
+          npx wrangler deploy 2>&1 | tee deploy.log
       - name: Give the brain its keys
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -41,6 +47,7 @@ jobs:
           print("keys:",sorted(s))
           json.dump(s,open("/tmp/s.json","w"))
           PY
+          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || unset CLOUDFLARE_ACCOUNT_ID
           npx wrangler secret bulk /tmp/s.json
           rm -f /tmp/s.json
       - name: Tell the app where the brain lives
