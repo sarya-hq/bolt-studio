@@ -138,7 +138,7 @@ td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:start;verti
 <div id="app"></div>
 <audio id="voice" playsinline preload="auto"></audio>
 <script>
-var VERSION="14";
+var VERSION="15";
 /* ---------- words ---------- */
 // he: string, or [girl, boy] when it changes with the child's gender. Bolt herself is always female.
 var W={
@@ -302,9 +302,10 @@ function listen(btn,box,label,onText){
 }
 function listenDevice(btn,box,label,onText){
  var R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){toast(t("micBlocked"));box&&box.focus();return}
- var r=new R(),base=box&&box.value?box.value.trim()+" ":"",got=false;r.lang=S.lang==="he"?"he-IL":"en-US";r.interimResults=true;r.continuous=true;
+ // One phrase per tap. Android repeats earlier words inside later results, so only the newest result is used.
+ var r=new R(),base=box&&box.value?box.value.trim()+" ":"";r.lang=S.lang==="he"?"he-IL":"en-US";r.interimResults=true;r.continuous=false;r.maxAlternatives=1;
  REC={stop:function(){try{r.stop()}catch(e){}}};btn.classList.add("on");label.textContent=t("listening");
- r.onresult=function(e){var all="";for(var i=0;i<e.results.length;i++)all+=e.results[i][0].transcript;got=true;if(onText){if(e.results[e.results.length-1].isFinal)onText(all.trim())}else{box.value=(base+all).trim();box.dispatchEvent(new Event("input"))}};
+ r.onresult=function(e){var last=e.results[e.results.length-1],txt=last[0].transcript.trim();if(onText){if(last.isFinal)onText(txt)}else{box.value=(base+txt).trim();box.dispatchEvent(new Event("input"))}};
  r.onerror=function(e){if(e&&/not-allowed|service-not-allowed|network/.test(e.error))toast(t("micBlocked"))};
  r.onend=function(){REC=null;btn.classList.remove("on");label.textContent=t("tapTalk")};
  try{r.start()}catch(e){REC=null;btn.classList.remove("on");toast(t("micBlocked"))}
