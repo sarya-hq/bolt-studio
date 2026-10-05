@@ -60,6 +60,7 @@ async function play(p) {
   const fixText = await ask(KID(p), `Bolt made your picture and said: "${r.bolt_says}". Bolt's list of what it drew: ${r.understood.map((u) => u.text + (u.guessed ? " (Bolt guessed)" : "")).join(", ")}. Now ask Bolt to change one or two things, the way this child would.`, 300);
   const f = await call("/api/think", { lang: p.lang, kid, step: "fix", mission: p.mission, text: fixText, rules: [], prev: { understood: r.understood, prompt: r.image_prompt } });
   log.turns.push({ step: "fix", said: fixText, bolt: f });
+  if (f.image_prompt) { const p2 = await call("/api/draw", { prompt: f.image_prompt, age: p.age }, "bin"); log.image2 = p2.bytes ? p2.bytes.toString("base64") : null; }
   return log;
 }
 
@@ -70,7 +71,8 @@ async function judge(log) {
   const p = log.persona;
   const transcript = log.turns.map((t) => `[${t.step}] CHILD said: ${t.said}\nBOLT returned: ${JSON.stringify(t.bolt)}`).join("\n\n");
   const content = [{ type: "text", text: `Child: ${p.name}, ${p.age}, ${p.g === "f" ? "girl" : "boy"}, language ${p.lang}. Persona: ${p.style}.\nLatency: think ${log.turns.map((t) => t.bolt.ms).join("/")} ms, draw ${log.draw_ms || "-"} ms.\n\n${transcript}` }];
-  if (log.image) content.unshift({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: log.image } });
+  if (log.image2) content.unshift({ type: "text", text: "Second image: the picture after the fix turn." }, { type: "image", source: { type: "base64", media_type: "image/jpeg", data: log.image2 } });
+  if (log.image) content.unshift({ type: "text", text: "First image: the picture after the brief." }, { type: "image", source: { type: "base64", media_type: "image/jpeg", data: log.image } });
   const raw = await ask(RUBRIC, content, 2500);
   try { return JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1)); } catch { return { parse_error: raw.slice(0, 500) }; }
 }
@@ -108,5 +110,5 @@ fs.mkdirSync(new URL("../../lab/reports/", import.meta.url), { recursive: true }
 fs.writeFileSync(new URL("../../lab/reports/latest.md", import.meta.url), md);
 const imgs = new URL("../../lab/reports/img/", import.meta.url);
 fs.mkdirSync(imgs, { recursive: true });
-logs.forEach((l) => { if (l.image) fs.writeFileSync(new URL(`${l.persona.id}.jpg`, imgs), Buffer.from(l.image, "base64")); });
+logs.forEach((l) => { if (l.image) fs.writeFileSync(new URL(`${l.persona.id}.jpg`, imgs), Buffer.from(l.image, "base64")); if (l.image2) fs.writeFileSync(new URL(`${l.persona.id}-fix.jpg`, imgs), Buffer.from(l.image2, "base64")); });
 console.log(md);
