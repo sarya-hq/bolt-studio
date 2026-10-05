@@ -183,7 +183,7 @@ td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:start;verti
 <div id="app"></div>
 <audio id="voice" playsinline preload="auto"></audio>
 <script>
-var VERSION="22";
+var VERSION="23";
 /* ---------- words ---------- */
 // he: string, or [girl, boy] when it changes with the child's gender. Bolt herself is always female.
 var W={
@@ -275,7 +275,9 @@ var W={
  levelUp:{en:"Level up! You're now {l}.",he:["עלית שלב! עכשיו את {l}.","עלית שלב! עכשיו אתה {l}."]},
  starsMsg1:{en:"I had to guess a lot. More details next time!",he:"הייתי צריכה לנחש הרבה. בפעם הבאה יותר פרטים!"},
  back:{en:"Back",he:"חזרה"},
- changePlayer:{en:"Switch player",he:"להחליף שחקן"},
+ changePlayer:{en:"Switch player",he:"החלפת שחקן"},
+ editKid:{en:"Change age or details",he:"לשנות גיל או פרטים"},
+ slow:{en:"Still working, almost there...",he:"עוד רגע, כמעט מוכן..."},
  noPics:{en:"Nothing here yet. Your creations will live here.",he:"עוד אין כאן כלום. היצירות שלך יגורו כאן."}
 };
 var b_rule_m={en:"Rule Maker: you taught Bolt",he:"ממציא כללים: לימדת את בולט"};
@@ -312,7 +314,7 @@ function boltLine(text){return '<div class="bolt"><div class="face" id="face"><i
 function boltMini(text){return '<div class="bolt compact"><div class="face" id="face"><img src="assets/bolt-face.jpg" alt=""></div><div class="say" id="say">'+esc(text)+'</div><button class="hear" data-say="'+esc(text)+'" aria-label="hear">'+IC.speak+'</button></div>'}
 function chipRow(v){var h='<div class="chiprow">';(v.left_out||[]).forEach(function(x){h+='<button class="pill out" data-say="'+esc(x)+'">⏸ '+esc(x)+'</button>'});(v.understood||[]).forEach(function(u){h+='<button class="pill '+(u.guessed?"guess":"said")+'" data-say="'+esc((u.guessed?t("guessed"):t("said"))+": "+u.text)+'">'+(u.guessed?"🎲 ":"✓ ")+esc(u.text)+'</button>'});(v.applied||[]).forEach(function(a){h+='<button class="pill rule" data-say="'+esc(a)+'">📘 '+esc(a)+'</button>'});return h+'</div>'}
 function starRow(n){var s="";for(var i=1;i<=3;i++)s+=i<=n?"★":'<span class="off">★</span>';return '<span class="stars">'+s+'</span>'}
-function render(html,after,cls){var a=$("#app");a.innerHTML='<div class="screen'+(cls?" "+cls:"")+'">'+html+'</div>'+(cls?'':'<div class="ver">v'+VERSION+'</div>');window.scrollTo(0,0);
+function render(html,after,cls){clearTimeout(S.slowT);var a=$("#app");a.innerHTML='<div class="screen'+(cls?" "+cls:"")+'">'+html+'</div>'+(cls?'':'<div class="ver">v'+VERSION+'</div>');window.scrollTo(0,0);
  onAll("[data-lang]",function(el){setLang(el.getAttribute("data-lang"))});
  onAll("[data-say]",function(el){say(el.getAttribute("data-say"))});
  if(after)after()}
@@ -326,7 +328,7 @@ document.addEventListener("touchstart",unlock,{capture:true,passive:true});docum
 function stopVoice(){speakSeq++;try{AUD.pause()}catch(e){}try{speechSynthesis.cancel()}catch(e){}var f=$("#face");if(f)f.classList.remove("talk")}
 function talking(onoff){var f=$("#face");if(f)f.classList.toggle("talk",onoff)}
 function say(text){
- if(!text)return Promise.resolve();stopVoice();var my=speakSeq,key=S.lang+"|"+text;talking(true);
+ if(!text)return Promise.resolve();stopVoice();var my=speakSeq,gk=(kid()&&kid().g)||"",key=S.lang+"|"+gk+"|"+text;talking(true);
  var got=VCACHE[key]?Promise.resolve(VCACHE[key]):(S.api?fetch(S.api+"/api/speak",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:text,lang:S.lang,g:gk})}).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(b){return VCACHE[key]=URL.createObjectURL(b)}):Promise.reject(0));
  return got.then(function(url){if(my!==speakSeq)return;return new Promise(function(res){AUD.onended=AUD.onerror=function(){talking(false);res()};AUD.src=url;var p=AUD.play();if(p&&p.catch)p.catch(function(){talking(false);res()})})})
   .catch(function(){if(my!==speakSeq)return;return deviceSay(text)});
@@ -417,7 +419,7 @@ function wireTalk(onChange){
 }
 
 /* ---------- API ---------- */
-function api(path,body){return fetch(S.api+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(function(r){if(!r.ok)throw new Error(r.status);return path==="/api/draw"?r.blob():r.json()})}
+function api(path,body,ms){var ctl=window.AbortController?new AbortController():null,tm=ctl&&setTimeout(function(){ctl.abort()},ms||45000);return fetch(S.api+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),signal:ctl&&ctl.signal}).finally(function(){clearTimeout(tm)}).then(function(r){if(!r.ok)throw new Error(r.status);return path==="/api/draw"?r.blob():r.json()})}
 function blobToData(b){return new Promise(function(res){var f=new FileReader();f.onload=function(){res(f.result)};f.readAsDataURL(b)})}
 
 /* ---------- picture store (IndexedDB) ---------- */
@@ -437,14 +439,14 @@ function xpBar(){var k=kid(),l=level(k.xp),lo=LEVELS[l],hi=LEVELS[l+1]||lo+500,p
 function home(){
  S.redraw=home;
  var names=Object.keys(KIDS);
- if(S.who&&KIDS[S.who]&&KIDS[S.who].g)return hub();
  render(bar({gear:true})+
-  '<div class="hero"><img src="assets/bolt.jpg" alt=""></div>'+
+  '<div class="hero" style="aspect-ratio:16/9"><img src="assets/bolt.jpg" alt="" style="object-position:50% 25%"></div>'+
   '<div class="over">'+esc(t("title"))+'</div><h1>'+esc(S.lang==="he"?W.taglineN.he:t("tagline"))+'</h1>'+
   (S.api?'':'<div class="offline">'+esc(t("offline"))+'</div>')+
-  '<h2>'+esc(t("who"))+'</h2><div class="stack">'+names.map(function(n){return '<button class="kidchip" data-kid="'+esc(n)+'"><span class="av">'+esc(n.charAt(0))+'</span>'+esc(n)+'</button>'}).join("")+
+  '<h2>'+esc(t("who"))+'</h2><div class="stack">'+names.sort(function(a,b){return a===S.who?-1:b===S.who?1:0}).map(function(n){var k=KIDS[n],info=(k.age?k.age+" · ":"")+(k.g==="f"?W.girl[S.lang]:k.g==="m"?W.boy[S.lang]:"");return '<div class="row" style="gap:8px;align-items:stretch"><button class="kidchip" style="flex:1" data-kid="'+esc(n)+'"><span class="av">'+esc(n.charAt(0))+'</span><span style="flex:1">'+esc(n)+'</span><span class="small">'+esc(info)+'</span></button><button class="iconbtn" style="height:auto;border-radius:22px;flex:0 0 56px" data-edit="'+esc(n)+'" aria-label="'+esc(t("editKid"))+'">✎</button></div>'}).join("")+
   '<button class="btn primary" id="new">'+esc(t("newKid"))+'</button></div>',
-  function(){onAll("[data-kid]",function(el){S.who=el.getAttribute("data-kid");save("bw.who",S.who);say(S.who);var k=kid();if(!k.g)return askGender();if(!k.age)return askAge();hub()});on("#new",newKid);on("#gear",gate)});
+  function(){onAll("[data-kid]",function(el){S.who=el.getAttribute("data-kid");save("bw.who",S.who);say(S.who);var k=kid();if(!k.g)return askGender();if(!k.age)return askAge();hub()});on("#new",newKid);on("#gear",gate);
+   onAll("[data-edit]",function(el){S.who=el.getAttribute("data-edit");save("bw.who",S.who);say(t("editKid"));askGender()})});
 }
 function newKid(){
  S.redraw=newKid;
@@ -469,7 +471,7 @@ function hub(){
  S.redraw=hub;var k=kid();if(!k)return home();
  var line=k.seenIntro?t("welcome",{n:S.who}):t(band()==="teen"?"introTeen":band()==="little"?"introLittle":"intro",{n:S.who});
  var last=k.stars.slice(-8);
- render(bar({gear:true,title:'<button class="pill" id="switch">'+esc(S.who)+' ↺</button>'})+
+ render(bar({gear:true,title:'<button class="pill" id="switch">👤 '+esc(S.who)+' · '+esc(t("changePlayer"))+'</button>'})+
   boltLine(line)+xpBar()+
   (S.api?'':'<div class="offline">'+esc(t("offline"))+'</div>')+
   '<div class="over">'+esc(t("pick"))+'</div><div class="stack">'+missions().map(function(m){return '<button class="mission" data-m="'+m[0]+'"><span class="ic" style="background:'+m[2]+'">'+m[1]+'</span><span><b>'+esc(t("m_"+m[0]))+'</b><span>'+esc(t("m_"+m[0]+"_s"))+'</span></span></button>'}).join("")+'</div>'+
@@ -478,7 +480,7 @@ function hub(){
   '<div class="over">'+esc(t("gallery"))+'</div>'+(k.pics.length?'<div class="grid" id="grid"></div>':'<p class="sub">'+esc(t("noPics"))+'</p>'),
   function(){
    say(line);k.seenIntro=true;persist();
-   on("#switch",function(){S.who="";save("bw.who","");home()});on("#gear",gate);on("#rules",rulebook);
+   on("#switch",function(){say(t("changePlayer"));home()});on("#gear",gate);on("#rules",rulebook);
    onAll("[data-m]",function(el){S.mission=el.getAttribute("data-m");say(el.querySelector("b").textContent);brief()});
    if(k.pics.length){var g=$("#grid");k.pics.slice().reverse().slice(0,12).forEach(function(p){getPic(p.id).then(function(rec){if(!rec)return;var b=document.createElement("button");b.innerHTML='<img alt="" src="'+rec.img+'">';b.onclick=function(){viewPic(rec)};g.appendChild(b)})})}
    warm([t("ask_creature"),t("ask_free")]);
@@ -493,7 +495,7 @@ function brief(){
   on("#send",function(){S.brief=$("#box").value.trim();if(REC)try{REC.stop()}catch(e){}addXP(10);run("brief",S.brief)})})
 }
 var HMM={en:["Hmm, let me think about that.","Ooh, okay. Thinking...","Got it. Let me picture it."],he:["הממ, רגע, אני חושבת.","אוקיי, אני חושבת על זה.","הבנתי. רגע, אני מדמיינת את זה."]};
-function thinking(label,quiet){S.redraw=null;if(!quiet){var h=HMM[S.lang];setTimeout(function(){say(h[Math.floor(Math.random()*h.length)])},50)}render('<div class="think"><div class="orb"><img src="assets/bolt-face.jpg" alt=""></div><h2>'+esc(label)+'</h2><div class="dots"><span></span><span></span><span></span></div></div>')}
+function thinking(label,quiet){S.redraw=null;if(!quiet){var h=HMM[S.lang];setTimeout(function(){say(h[Math.floor(Math.random()*h.length)])},50)}render('<div class="think"><div class="orb"><img src="assets/bolt-face.jpg" alt=""></div><h2>'+esc(label)+'</h2><div class="dots"><span></span><span></span><span></span></div></div>');S.slowT=setTimeout(function(){var h2=document.querySelector('.think h2');if(h2){h2.textContent=t('slow');say(t('slow'))}},14000)}
 function oops(retry){render(bar({back:true})+boltLine(t("oops"))+'<button class="btn primary" id="retry">'+esc(t("tryAgain"))+'</button>',function(){on("#back",hub);say(t("oops"));on("#retry",retry)})}
 function run(step,text){
  if(!S.api){toast(t("offline"));return}
