@@ -138,7 +138,7 @@ td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:start;verti
 <div id="app"></div>
 <audio id="voice" playsinline preload="auto"></audio>
 <script>
-var VERSION="13";
+var VERSION="14";
 /* ---------- words ---------- */
 // he: string, or [girl, boy] when it changes with the child's gender. Bolt herself is always female.
 var W={
@@ -171,7 +171,10 @@ var W={
  ask_ride:{en:"Tell me about your vehicle. Does it drive, fly or swim? What does it look like?",he:["ספרי לי על כלי הרכב שלך. הוא נוסע, עף או שוחה? איך הוא נראה?","ספר לי על כלי הרכב שלך. הוא נוסע, עף או שוחה? איך הוא נראה?"]},
  ask_free:{en:"What should I draw? Tell me as much as you can.",he:["מה לצייר? ספרי לי כמה שיותר.","מה לצייר? ספר לי כמה שיותר."]},
  tapTalk:{en:"Tap and talk",he:["לחצי ודברי","לחץ ודבר"]},
- listening:{en:"Listening... tap to stop",he:"מקשיבה... לחיצה לעצירה"},
+ listening:{en:"Listening... tap again when you finish",he:["מקשיבה... לחצי שוב כשסיימת","מקשיבה... לחץ שוב כשסיימת"]},
+ hearing:{en:"Bolt is listening to what you said...",he:"בולט מקשיבה למה שאמרת..."},
+ notHeard:{en:"I didn't catch that. Try again, a bit louder.",he:"לא שמעתי טוב. ננסה שוב, קצת יותר חזק?"},
+ micBlocked:{en:"I can't use the microphone. Allow it in the browser, or type instead.",he:"אין לי גישה למיקרופון. צריך לאשר אותו בדפדפן, או לכתוב."},
  orType:{en:"Or type here",he:["או כתבי כאן","או כתוב כאן"]},
  send:{en:"Send to Bolt",he:"לשלוח לבולט"},
  thinking:{en:"Bolt is thinking",he:"בולט חושבת"},
@@ -269,15 +272,42 @@ function warm(list){if(!S.api)return;list.forEach(function(x){var key=S.lang+"|"
 
 /* ---------- listening ---------- */
 var REC=null;
-function canListen(){return !!(window.SpeechRecognition||window.webkitSpeechRecognition)}
-function listen(btn,box,label){
- if(REC){try{REC.stop()}catch(e){}return}
- var R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){box.focus();return}
- stopVoice();var r=new R();REC=r;r.lang=S.lang==="he"?"he-IL":"en-US";r.interimResults=true;r.continuous=true;var base=box.value?box.value.trim()+" ":"",fin="";
- btn.classList.add("on");label.textContent=t("listening");
- r.onresult=function(e){var inter="";fin="";for(var i=0;i<e.results.length;i++){if(e.results[i].isFinal)fin+=e.results[i][0].transcript;else inter+=e.results[i][0].transcript}box.value=(base+fin+inter).trim();box.dispatchEvent(new Event("input"))};
- r.onend=r.onerror=function(){REC=null;btn.classList.remove("on");label.textContent=t("tapTalk")};
- try{r.start()}catch(e){REC=null;btn.classList.remove("on")}
+// Bolt hears through the phone's microphone and her own speech-to-text, so it works in every browser and in-app browser.
+function canRecord(){return !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder)}
+function canListen(){return canRecord()||!!(window.SpeechRecognition||window.webkitSpeechRecognition)}
+function listen(btn,box,label,onText){
+ if(REC){REC.stop();return}
+ stopVoice();
+ if(!canRecord()||!S.api)return listenDevice(btn,box,label,onText);
+ navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}}).then(function(stream){
+  var mime=["audio/webm;codecs=opus","audio/webm","audio/mp4","audio/ogg"].filter(function(m){return MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m)})[0]||"";
+  var rec=new MediaRecorder(stream,mime?{mimeType:mime}:{}),parts=[],timer;
+  REC={stop:function(){clearTimeout(timer);try{rec.stop()}catch(e){}}};
+  rec.ondataavailable=function(e){if(e.data&&e.data.size)parts.push(e.data)};
+  rec.onstop=function(){
+   stream.getTracks().forEach(function(tr){tr.stop()});REC=null;btn.classList.remove("on");
+   var blob=new Blob(parts,{type:rec.mimeType||mime||"audio/webm"});
+   if(blob.size<1500){label.textContent=t("tapTalk");return}
+   label.textContent=t("hearing");btn.disabled=true;
+   blobToData(blob).then(function(d){return api("/api/hear",{audio:d.split(",")[1],lang:S.lang})}).then(function(r){
+    var txt=(r&&r.text||"").trim();btn.disabled=false;label.textContent=t("tapTalk");
+    if(!txt){toast(t("notHeard"));return}
+    if(onText)return onText(txt);
+    box.value=((box.value?box.value.trim()+" ":"")+txt).trim();box.dispatchEvent(new Event("input"));
+   }).catch(function(){btn.disabled=false;label.textContent=t("tapTalk");toast(t("notHeard"))});
+  };
+  rec.start();btn.classList.add("on");label.textContent=t("listening");
+  timer=setTimeout(function(){REC&&REC.stop()},30000);
+ }).catch(function(){toast(t("micBlocked"));listenDevice(btn,box,label,onText)});
+}
+function listenDevice(btn,box,label,onText){
+ var R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){toast(t("micBlocked"));box&&box.focus();return}
+ var r=new R(),base=box&&box.value?box.value.trim()+" ":"",got=false;r.lang=S.lang==="he"?"he-IL":"en-US";r.interimResults=true;r.continuous=true;
+ REC={stop:function(){try{r.stop()}catch(e){}}};btn.classList.add("on");label.textContent=t("listening");
+ r.onresult=function(e){var all="";for(var i=0;i<e.results.length;i++)all+=e.results[i][0].transcript;got=true;if(onText){if(e.results[e.results.length-1].isFinal)onText(all.trim())}else{box.value=(base+all).trim();box.dispatchEvent(new Event("input"))}};
+ r.onerror=function(e){if(e&&/not-allowed|service-not-allowed|network/.test(e.error))toast(t("micBlocked"))};
+ r.onend=function(){REC=null;btn.classList.remove("on");label.textContent=t("tapTalk")};
+ try{r.start()}catch(e){REC=null;btn.classList.remove("on");toast(t("micBlocked"))}
 }
 function talkBox(placeholder){return '<div class="talkbox">'+(canListen()?'<button class="mic" id="mic" aria-label="'+esc(t("tapTalk"))+'">'+IC.mic+'</button><div class="mic-label" id="micl">'+esc(t("tapTalk"))+'</div>':'')+'<textarea id="box" placeholder="'+esc(placeholder||t("orType"))+'"></textarea></div>'}
 function wireTalk(onChange){var box=$("#box");on("#mic",function(){listen($("#mic"),box,$("#micl"))});box.addEventListener("input",function(){onChange(box.value.trim())})}
@@ -429,7 +459,7 @@ function nameIt(v){
  S.redraw=null;
  render(bar({})+'<div class="pic"><img alt="" src="'+v.img+'"></div>'+boltLine(t("nameIt"))+'<input type="text" id="nm" maxlength="30" autocomplete="off">'+(canListen()?'<button class="btn ghost" id="micn">'+IC.mic+' '+esc(t("tapTalk"))+'</button>':'')+'<button class="btn primary" id="sv">'+esc(t("save"))+'</button>',function(){
   say(t("nameIt"));var nm=$("#nm");
-  on("#micn",function(){var R=window.SpeechRecognition||window.webkitSpeechRecognition,r=new R();r.lang=S.lang==="he"?"he-IL":"en-US";r.onresult=function(e){nm.value=e.results[0][0].transcript};stopVoice();try{r.start()}catch(e){}});
+  on("#micn",function(){var b=$("#micn"),l=document.createElement("span");listen(b,null,{set textContent(v){b.lastChild.textContent=" "+v}},function(txt){nm.value=txt})});
   on("#sv",function(){var k=kid(),id="p"+Date.now(),title=nm.value.trim()||t("m_"+S.mission);
    putPic({id:id,kid:S.who,title:title,img:v.img,brief:S.brief,fixes:S.v.filter(function(x){return x.step==="fix"}).map(function(x){return x.said}),versions:S.v.length,mission:S.mission,at:new Date().toISOString()}).then(function(){
     k.pics.push({id:id,title:title,at:new Date().toISOString(),versions:S.v.length});addXP(20);if(k.pics.length>=5)badge("b_five");persist();celebrate(v,title)})})})

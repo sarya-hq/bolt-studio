@@ -146,6 +146,12 @@ export default {
         const img = await draw(env, b.prompt, b.seed);
         return new Response(img, { headers: { "Content-Type": "image/jpeg", ...cors(req) } });
       }
+      if (url.pathname === "/api/hear" && req.method === "POST") {
+        const b = await req.json();
+        if (!b.audio || b.audio.length > 4_000_000) return json(req, { error: "no audio" }, 400);
+        const out = await env.AI.run("@cf/openai/whisper-large-v3-turbo", { audio: b.audio, language: b.lang === "he" ? "he" : "en", vad_filter: true });
+        return json(req, { text: clip(out && out.text, 600).trim() });
+      }
       if (url.pathname === "/api/speak" && req.method === "POST") {
         const b = await req.json();
         const text = clip(b.text, 400).trim();
