@@ -10,13 +10,16 @@ permissions:
 jobs:
   record:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -q edge-tts
       - run: python tts/make_voice.py
+        env:
+          AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
+          AZURE_SPEECH_REGION: ${{ secrets.AZURE_SPEECH_REGION }}
       - name: Commit voice
         run: |
           git config user.name "github-actions[bot]"
