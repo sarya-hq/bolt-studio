@@ -1,0 +1,24 @@
+name: List image models
+on: workflow_dispatch
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci
+        working-directory: worker
+      - working-directory: worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          RAW_ACC: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          export CLOUDFLARE_ACCOUNT_ID=$(printf '%s' "$RAW_ACC" | grep -oiE '[0-9a-f]{32}' | head -1)
+          npx wrangler ai models --json > m.json 2>/dev/null || true
+          python3 -c "
+          import json
+          for m in json.load(open('m.json')):
+              t=(m.get('task') or {}).get('name','')
+              if 'Image' in t and 'Classification' not in t: print(m['name'],'|',t,'|',(m.get('description') or '')[:120])
+          "

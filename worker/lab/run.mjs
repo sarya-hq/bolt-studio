@@ -58,7 +58,7 @@ async function play(p) {
   log.image = pic.bytes ? pic.bytes.toString("base64") : null;
   // 3. The child checks and asks for a fix
   const fixText = await ask(KID(p), `Bolt made your picture and said: "${r.bolt_says}". Bolt's list of what it drew: ${r.understood.map((u) => u.text + (u.guessed ? " (Bolt guessed)" : "")).join(", ")}. Now ask Bolt to change one or two things, the way this child would.`, 300);
-  const f = await call("/api/think", { lang: p.lang, kid, step: "fix", mission: p.mission, text: fixText, rules: [], prev: { understood: r.understood, prompt: r.image_prompt } });
+  const f = await call("/api/think", { lang: p.lang, kid, step: "fix", mission: p.mission, text: fixText, rules: [], prev: { understood: r.understood, prompt: r.image_prompt }, history: [{ said: text, tip: r.tip }] });
   log.turns.push({ step: "fix", said: fixText, bolt: f });
   if (f.image_prompt) { const p2 = await call("/api/draw", { prompt: f.image_prompt, age: p.age }, "bin"); log.image2 = p2.bytes ? p2.bytes.toString("base64") : null; }
   return log;

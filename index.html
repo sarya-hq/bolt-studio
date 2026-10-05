@@ -182,7 +182,7 @@ td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:start;verti
 <div id="app"></div>
 <audio id="voice" playsinline preload="auto"></audio>
 <script>
-var VERSION="19";
+var VERSION="20";
 /* ---------- words ---------- */
 // he: string, or [girl, boy] when it changes with the child's gender. Bolt herself is always female.
 var W={
@@ -488,7 +488,7 @@ function brief(){
  var q=t("ask_"+S.mission);
  render(bar({back:true,title:'<span class="over">'+esc(t("m_"+S.mission))+'</span>'})+boltLine(q)+talkBox()+'<button class="btn primary" id="send" disabled>'+esc(t("send"))+'</button>',function(){
   on("#back",hub);say(q);
-  wireTalk(function(v){$("#send").disabled=!v});
+  wireTalk(function(v){$("#send").disabled=v.length<3});
   on("#send",function(){S.brief=$("#box").value.trim();if(REC)try{REC.stop()}catch(e){}addXP(10);run("brief",S.brief)})})
 }
 var HMM={en:["Hmm, let me think about that.","Ooh, okay. Thinking...","Got it. Let me picture it."],he:["הממ, רגע, אני חושבת.","אוקיי, אני חושבת על זה.","הבנתי. רגע, אני מדמיינת את זה."]};
@@ -498,7 +498,7 @@ function run(step,text){
  if(!S.api){toast(t("offline"));return}
  var k=kid(),prev=S.v[S.v.length-1];
  thinking(t("thinking"));
- api("/api/think",{lang:S.lang,kid:{name:S.who,g:k.g,age:k.age},step:step,mission:t("m_"+S.mission),text:text,rules:k.rules,prev:prev?{understood:prev.understood,prompt:prev.prompt}:null,noAsk:S.asked||step==="fix"})
+ api("/api/think",{lang:S.lang,kid:{name:S.who,g:k.g,age:k.age},step:step,mission:t("m_"+S.mission),text:text,rules:k.rules,prev:prev?{understood:prev.understood,prompt:prev.prompt}:null,history:S.v.map(function(x){return{said:x.said,tip:x.tip}}),noAsk:S.asked||step==="fix"})
  .then(function(r){
    if(!r.safe){return render(bar({back:true})+boltLine(r.bolt_says)+'<button class="btn primary" id="again">'+esc(t("tryAgain"))+'</button>',function(){on("#back",hub);say(r.bolt_says);on("#again",brief)})}
    if(step==="brief"&&r.ask&&!S.asked){S.asked=true;return clarify(r.ask)}
@@ -544,7 +544,7 @@ function result(){
 function fix(){
  S.redraw=fix;var v=S.v[S.v.length-1];
  render(bar({back:true})+'<div class="stagepic" style="flex:0 1 30vh"><img alt="" src="'+v.img+'"></div>'+boltMini(t("whatFix"))+talkBox()+'<div class="actions"><button class="btn primary" id="send" disabled>'+esc(t("send"))+'</button></div>',function(){
-  on("#back",result);say(t("whatFix"));wireTalk(function(x){$("#send").disabled=!x});
+  on("#back",result);say(t("whatFix"));wireTalk(function(x){$("#send").disabled=x.length<3});
   on("#send",function(){var x=$("#box").value.trim();if(REC)try{REC.stop()}catch(e){}addXP(15);badge("b_eye");run("fix",x)})},"stage")
 }
 // Before / after: tap a side, tap the picture, or swipe. No slider, so no left-right confusion in Hebrew.
