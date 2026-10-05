@@ -1,0 +1,570 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-192.png"><title>Night Parade</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Night Parade">
+<meta name="theme-color" content="#FBF6F0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Noto+Sans+Hebrew:wght@400;500;600;700&display=swap">
+<style>
+/* Studio Orbit: warm studio white matched to the renders, ink navy type, one coral accent, mint for "correct". Art carries the screen; chrome stays quiet. */
+:root{
+  --bg:#FBF6F0; --card:#FFFFFF; --ink:#14213D; --soft:#6A6F80; --line:#ECE4DA;
+  --coral:#FF6B4A; --mint:#2FAE98; --saffron:#F4C95D; --night:#0E1426;
+  --font:"DM Sans","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+html[lang="he"]{--font:"Noto Sans Hebrew","DM Sans","Segoe UI",system-ui,sans-serif}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:18px;line-height:1.45;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+#app{max-width:480px;margin:0 auto;min-height:100%;position:relative}
+.screen{display:flex;flex-direction:column;gap:20px;padding-inline:20px;padding-block:16px 36px;min-height:100%;box-sizing:border-box;animation:enter .38s cubic-bezier(.2,.8,.2,1) both}
+@keyframes enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.bar{display:flex;justify-content:flex-end;gap:8px;align-items:center;min-height:44px}
+.bar .grow{flex:1;min-width:0;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
+html[lang="he"] .bar .grow{letter-spacing:0}
+.chipctl{height:40px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.82);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);display:flex;align-items:center;overflow:hidden}
+.chipctl button{border:none;background:none;height:40px;min-width:44px;padding:0 12px;font:600 14px var(--font);color:var(--soft);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.chipctl button[aria-pressed="true"]{color:var(--ink)}
+.chipctl button svg{width:20px;height:20px}
+.chipctl .sep{width:1px;height:18px;background:var(--line)}
+h1{font-size:40px;line-height:1.05;letter-spacing:-.03em;font-weight:700;margin:0;text-wrap:balance}
+h2{font-size:28px;line-height:1.12;letter-spacing:-.02em;font-weight:700;margin:0;text-wrap:balance}
+html[lang="he"] h1,html[lang="he"] h2{letter-spacing:0}
+p{margin:0}
+.sub{color:var(--soft);font-size:17px}
+.over{font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--coral)}
+html[lang="he"] .over{letter-spacing:0}
+/* hero */
+.hero{margin-inline:-20px;margin-top:-16px;position:relative;height:56vh;min-height:360px;max-height:560px;overflow:hidden}
+.hero img{width:100%;height:100%;object-fit:cover;object-position:50% 70%;display:block;animation:kenburns 14s ease-out both}
+@keyframes kenburns{from{transform:scale(1.08)}to{transform:scale(1)}}
+.hero:after{content:"";position:absolute;inset:auto 0 0 0;height:45%;background:linear-gradient(to bottom,rgba(251,246,240,0),var(--bg))}
+.hero .bar{position:absolute;top:12px;inset-inline:16px;z-index:2}
+/* art */
+.art{border-radius:28px;overflow:hidden;position:relative;background:#E9E2D8;box-shadow:0 1px 0 rgba(20,33,61,.04),0 18px 40px -22px rgba(20,33,61,.45)}
+.art img{display:block;width:100%;height:auto}
+.art.night{background:var(--night)}
+.art .tag{position:absolute;top:14px;inset-inline-start:14px;background:rgba(14,20,38,.62);color:#fff;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.art.crowd img{transform:scale(1.28) translateY(6%);filter:brightness(.85);transition:transform .8s ease}
+.art.crowd:after{content:"";position:absolute;inset:auto 0 0 0;height:26%;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cg fill='%23070A14'%3E%3Ccircle cx='30' cy='45' r='22'/%3E%3Crect x='5' y='60' width='50' height='40' rx='20'/%3E%3Ccircle cx='110' cy='38' r='25'/%3E%3Crect x='80' y='56' width='60' height='44' rx='22'/%3E%3Ccircle cx='200' cy='48' r='20'/%3E%3Crect x='176' y='62' width='48' height='38' rx='20'/%3E%3Ccircle cx='285' cy='36' r='26'/%3E%3Crect x='252' y='56' width='66' height='44' rx='24'/%3E%3Ccircle cx='370' cy='46' r='22'/%3E%3Crect x='342' y='62' width='56' height='38' rx='20'/%3E%3C/g%3E%3C/svg%3E") bottom/100% 100% no-repeat}
+.reveal img{animation:reveal 1.1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes reveal{from{opacity:0;filter:blur(14px) brightness(.6);transform:scale(1.04)}to{opacity:1;filter:none;transform:none}}
+/* Bolt line */
+.bolt{display:flex;gap:14px;align-items:flex-start}
+.face{flex:0 0 56px;width:56px;height:56px;border-radius:50%;overflow:hidden;background:#F3EEE7;box-shadow:inset 0 0 0 1px var(--line);position:relative}
+.face img{width:100%;height:100%;display:block}
+.face.talk{animation:bob .5s ease-in-out infinite alternate}
+@keyframes bob{to{transform:translateY(-2px) rotate(-2deg)}}
+.say{flex:1;min-width:0;font-size:19px;line-height:1.4;font-weight:500;padding-top:2px}
+.replay{flex:0 0 44px;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.replay svg{width:18px;height:18px}
+/* controls */
+.btn{min-height:58px;border-radius:29px;border:none;font:600 18px var(--font);cursor:pointer;width:100%;padding:0 24px;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .15s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--ink);color:#fff}
+.btn.primary:disabled{opacity:.28;cursor:default}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.choice{display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;text-align:start;background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:16px 18px;cursor:pointer;font:500 17px var(--font);color:var(--ink);transition:border-color .15s,transform .15s}
+.choice:active{transform:scale(.985)}
+.choice b{display:block;font-weight:700;font-size:18px}
+.choice small{display:block;color:var(--soft);font-size:15px;margin-top:2px}
+.choice .dot{flex:0 0 40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#F3EEE7}
+.choice .dot svg{width:20px;height:20px}
+.choice.main{background:var(--ink);border-color:var(--ink);color:#fff}
+.choice.main small{color:rgba(255,255,255,.7)}
+.choice.main .dot{background:rgba(255,255,255,.12)}
+label,.lbl{font-size:14px;font-weight:600;color:var(--soft)}
+input[type=text],input[type=password]{font:500 18px var(--font);height:56px;padding:0 20px;border-radius:28px;border:1.5px solid var(--line);width:100%;box-sizing:border-box;color:var(--ink);background:var(--card)}
+input:focus{outline:none;border-color:var(--ink)}
+:focus-visible{outline:3px solid var(--coral);outline-offset:3px}
+/* float picker */
+.floats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.fcard{border:none;padding:0;background:var(--night);border-radius:20px;overflow:hidden;cursor:pointer;position:relative;aspect-ratio:3/4;box-shadow:0 0 0 0 var(--coral);transition:box-shadow .2s,transform .2s}
+.fcard img{width:100%;height:100%;object-fit:cover;display:block;opacity:.86;transition:opacity .2s}
+.fcard span{position:absolute;bottom:10px;inset-inline:0;text-align:center;color:#fff;font:600 15px var(--font);text-shadow:0 1px 8px rgba(0,0,0,.6)}
+.fcard[aria-pressed="true"]{box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--coral);transform:translateY(-2px)}
+.fcard[aria-pressed="true"] img{opacity:1}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{min-height:46px;padding:0 18px;border-radius:23px;border:1.5px solid var(--line);background:var(--card);font:500 16px var(--font);color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:8px}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip.locked{background:#FFF1EC;border-color:#FFD3C7;color:#B23A1F;cursor:default}
+.chip svg{width:16px;height:16px}
+.preview{display:flex;gap:14px;align-items:center;background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:10px;transition:opacity .2s}
+.preview img{width:64px;height:64px;border-radius:14px;object-fit:cover;flex:0 0 auto;background:var(--night)}
+.preview p{font-size:15px;color:var(--soft)}
+.preview b{color:var(--ink);font-weight:600}
+/* building */
+.building{min-height:100%;background:var(--night);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:40px 24px;box-sizing:border-box;margin:0}
+.building img{width:120px;height:120px;border-radius:50%;animation:bob .6s ease-in-out infinite alternate}
+.progress{width:70%;max-width:260px;height:4px;border-radius:2px;background:rgba(255,255,255,.14);overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--saffron);animation:fill 2.4s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes fill{to{width:100%}}
+/* checking */
+.rules{display:flex;flex-direction:column;gap:10px}
+.rule{display:flex;align-items:center;gap:12px;background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:12px 12px 12px 16px;transition:border-color .2s,background .2s}
+html[dir="rtl"] .rule{padding:12px 16px 12px 12px}
+.rule .t{flex:1;min-width:0;font-weight:500;font-size:16px}
+.rule .t small{display:block;font-size:13px;color:#B23A1F;font-weight:600}
+.yn{display:flex;gap:6px}
+.yn button{width:52px;height:44px;border-radius:22px;border:1.5px solid var(--line);background:var(--bg);font:600 15px var(--font);color:var(--ink);cursor:pointer}
+.yn button[aria-pressed="true"][data-a="y"]{background:var(--mint);border-color:var(--mint);color:#fff}
+.yn button[aria-pressed="true"][data-a="n"]{background:var(--coral);border-color:var(--coral);color:#fff}
+.rule.again{border-color:var(--saffron);background:#FFF9EA}
+.note{font-size:15px;color:var(--soft);min-height:22px;text-align:center}
+/* compare slider */
+.compare{position:relative;border-radius:28px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;background:var(--night);box-shadow:0 18px 40px -22px rgba(20,33,61,.5)}
+.compare img{display:block;width:100%;height:auto;pointer-events:none}
+.compare .top{position:absolute;inset:0;clip-path:inset(0 0 0 50%)}
+.compare .top img{position:absolute;inset:0;width:100%;height:100%}
+.compare .handle{position:absolute;top:0;bottom:0;width:2px;background:#fff;left:50%;transform:translateX(-1px);box-shadow:0 0 12px rgba(0,0,0,.4)}
+.compare .handle:after{content:"";position:absolute;top:50%;left:50%;width:44px;height:44px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);box-shadow:0 4px 16px rgba(0,0,0,.35);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 7l-5 5 5 5M15 7l5 5-5 5' stroke='%2314213D' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-size:22px;background-position:center;background-repeat:no-repeat}
+.compare .lb{position:absolute;bottom:14px;font-size:13px;font-weight:600;color:#fff;background:rgba(14,20,38,.6);padding:5px 12px;border-radius:999px}
+.compare .lb.l{left:14px}.compare .lb.r{right:14px}
+/* finale */
+.finale .art{margin-inline:-20px;margin-top:-16px;border-radius:0 0 32px 32px}
+.stamp{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;background:#EAF7F3;color:#1D7A69;font-weight:600;font-size:14px;padding:8px 14px;border-radius:999px}
+.stamp svg{width:16px;height:16px}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.card h3{font-size:17px;margin:0;font-weight:700}
+.card ul{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:1.45}
+.foot{display:flex;justify-content:center}
+.link{background:none;border:none;color:var(--soft);font:500 15px var(--font);text-decoration:underline;cursor:pointer;min-height:44px;padding:0 12px}
+.run{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:4px;font-size:15px}
+.run:first-of-type{border-top:none;padding-top:0}
+.hear{display:inline-flex;flex:0 0 38px;width:38px;height:38px;border-radius:50%;align-items:center;justify-content:center;background:#F1EBE3;color:var(--ink);margin-inline-start:auto;cursor:pointer}
+.hear svg{width:17px;height:17px}
+.choice.main .hear{background:rgba(255,255,255,.16);color:#fff}
+.choice>span:not(.dot):not(.hear){flex:1;min-width:0}
+.lblrow{display:flex;align-items:center;gap:10px}
+.lblrow .hear{margin-inline-start:0;width:32px;height:32px;flex-basis:32px}
+.headrow{display:flex;align-items:flex-start;gap:12px}
+.headrow>:first-child{flex:1;min-width:0}
+.field{position:relative}
+.field input{padding-inline-end:66px}
+.mic-in{position:absolute;inset-inline-end:6px;top:6px;width:44px;height:44px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.mic-in svg{width:20px;height:20px}
+.mic-in.rec{background:var(--coral);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(255,107,74,.25)}}
+.rule .hear{margin-inline-start:0}
+.choicegrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choice.big{min-height:84px;font-size:22px;font-weight:700;justify-content:space-between}
+.ages{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.age{height:72px;border-radius:24px;border:1.5px solid var(--line);background:var(--card);font:700 28px var(--font);color:var(--ink);cursor:pointer}
+.age:active{transform:scale(.96)}
+@media (max-width:380px){h1{font-size:34px}.floats{gap:8px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<style>html,body{margin:0}body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}.rule .hear,.chips .hear{margin-inline-start:0}</style></head><body><div id="app" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+var VOICE={};
+var UI={};
+var HE={},EN={};function loadVoice(f,cb){try{fetch("assets/"+f,{cache:"no-cache"}).then(function(r){return r.ok?r.json():{}}).then(function(j){cb(j||{})}).catch(function(){})}catch(e){}}
+loadVoice("en-voice.json",function(j){EN=j});loadVoice("he-voice.json",function(j){HE=j});
+var VERSION="12";
+var LINES_EN={"intro": "Hi, I'm Bolt. I'm a computer program, not a person, and I don't have feelings. I build fast, but my work can look great and still be wrong. You're the director. You set the rules, I build, and you check.", "back": "Welcome back, director. Ready for another parade?", "how": "Before I start: do you want to give me a brief, or should I just guess?", "guess": "Here's my guess. A box with balloons. Is that what you had in mind?", "guessAfter": "Guessing sometimes works, but usually it misses what you wanted. A clear brief gives me a much better chance. Even then, you still need to check my work.", "brief": "Pick your float, give it a name, and choose your rules. The city already has one rule: the float must be easy to see at night.", "build": "Brief received. Building your float now.", "check": "Here it is, at night on the parade street. Check it against every rule. Tap yes or no for each one.", "checkRight": "You caught it. The rule says easy to see at night, and it isn't. How should I fix it?", "vague1": "Better how? I didn't know which part you meant, so I just made it shinier. It's still dark.", "vague2": "I added more lights. But I put them underneath again. It's still hard to see. Tell me exactly where they go.", "fixed": "Done. The lights face outward now, on every side. Drag the slider to compare before and after.", "fireworks": "One more decision. I can add fireworks on top. They're exciting, but loud bangs might scare little kids in the crowd. Your call.", "why": "Why did you decide that?", "finale": "The parade is ready. You checked the rules, caught the problem, and told me exactly what to fix. That's how you lead an AI.", "q1": "Quick question. How did that mission feel?", "q2": "Which part was the hardest?", "thanks": "Thanks for telling me. See you at the next parade.", "predict": "Before I build: which rule do you think I might get wrong?", "crowd": "Here's the view from the crowd. Take another look, and change any answer you want.", "sure": "How sure are you that you found every problem?", "consequence": "Parade night. The crowd couldn't see your float in the dark, so the city rule was broken. Let's fix it. How should I change it?", "meet": "Hi! I'm Bolt. Before we start, tell me a little about you. Are you a girl or a boy?", "ageQ": "How old are you?", "ready": "Great. Let's build something amazing together.", "pick_fox": "A fox! Clever choice.", "pick_owl": "An owl! Owls see well at night.", "pick_whale": "A whale! Big and bold.", "predicted": "Interesting. Let's see if you're right."};
+var A="assets/";
+var app=document.getElementById("app");
+
+var LINES_HE={
+consequence:"ערב המצעד. הקהל לא ראה את הקרון בחושך, אז הכלל של העירייה לא נשמר. בואו נתקן. איך לשנות אותו?",
+sure:"כמה אתם בטוחים שמצאתם את כל הבעיות?",
+crowd:"ככה רואים את זה מהקהל. תסתכלו שוב, ותשנו כל תשובה שתרצו.",
+predict:"לפני שאני בונה: איזה כלל לדעתכם אני עלולה לפספס?",
+intro:"היי, אני בולט. אני תוכנת מחשב, לא בן אדם, ואין לי רגשות. אני בונה מהר, אבל העבודה שלי יכולה להיראות מעולה ועדיין להיות לא נכונה. אתם המנהלים: אתם קובעים את הכללים, אני בונה, ואתם בודקים.",
+back:"ברוכים השבים! מוכנים למצעד נוסף?",
+how:"לפני שאני מתחילה: רוצים לתת לי הוראות, או שאני פשוט אנחש?",
+guess:"הנה הניחוש שלי: קופסה עם בלונים. זה מה שדמיינתם?",
+guessAfter:"לפעמים ניחוש מצליח, אבל בדרך כלל הוא מפספס את מה שרציתם. הוראות ברורות נותנות לי סיכוי הרבה יותר טוב. וגם אז, צריך לבדוק את העבודה שלי.",
+brief:"בחרו קרון, תנו לו שם ובחרו כללים. לעירייה כבר יש כלל אחד: את הקרון חייבים לראות בקלות בלילה.",
+build:"קיבלתי את ההוראות. בונה את הקרון עכשיו.",
+check:"הנה הוא, בלילה ברחוב המצעד. בדקו אותו מול כל כלל. לחצו כן או לא ליד כל אחד.",
+checkWrong:"תסתכלו שוב על התמונה. אם הייתם עומדים בקהל, הייתם רואים אותו?",
+checkRight:"תפסתם אותי. הכלל אומר שרואים אותו בקלות בלילה, ולא רואים. איך לתקן?",
+vague1:"יותר טוב איך? לא ידעתי לאיזה חלק התכוונתם, אז רק הוספתי ברק. הוא עדיין חשוך.",
+vague2:"הוספתי עוד אורות. אבל שוב שמתי אותם מתחת. עדיין קשה לראות אותו. תגידו לי בדיוק איפה לשים אותם.",
+fixed:"סיימתי. עכשיו האורות פונים החוצה, מכל הצדדים. גררו את המחוון כדי להשוות לפני ואחרי.",
+fireworks:"עוד החלטה אחת. אני יכולה להוסיף זיקוקים מעל הקרון. הם מרגשים, אבל הפיצוצים הרועשים עלולים להפחיד ילדים קטנים בקהל. ההחלטה שלכם.",
+why:"למה החלטתם ככה?",
+finale:"המצעד מוכן. בדקתם את הכללים, תפסתם את הבעיה ואמרתם לי בדיוק מה לתקן. ככה מובילים בינה מלאכותית.",
+q1:"שאלה קטנה: איך הייתה המשימה?",
+q2:"איזה חלק היה הכי קשה?",
+thanks:"תודה שסיפרתם לי. נתראה במצעד הבא."
+};
+var HE_F={"intro": "היי, אני בולט. אני תוכנת מחשב, לא בן אדם, ואין לי רגשות. אני בונה מהר, אבל העבודה שלי יכולה להיראות מעולה ועדיין להיות לא נכונה. את המנהלת: את קובעת את הכללים, אני בונה, ואת בודקת.", "back": "ברוכה השבה! מוכנה למצעד נוסף?", "how": "לפני שאני מתחילה: את רוצה לתת לי הוראות, או שאני פשוט אנחש?", "guess": "הנה הניחוש שלי: קופסה עם בלונים. זה מה שדמיינת?", "guessAfter": "לפעמים ניחוש מצליח, אבל בדרך כלל הוא מפספס את מה שרצית. הוראות ברורות נותנות לי סיכוי הרבה יותר טוב. וגם אז, צריך לבדוק את העבודה שלי.", "brief": "בחרי קרון, תני לו שם ובחרי כללים. לעירייה כבר יש כלל אחד: את הקרון חייבים לראות בקלות בלילה.", "predict": "לפני שאני בונה: איזה כלל לדעתך אני עלולה לפספס?", "check": "הנה הוא, בלילה ברחוב המצעד. בדקי אותו מול כל כלל. לחצי כן או לא ליד כל אחד.", "crowd": "ככה רואים את זה מהקהל. תסתכלי שוב, ותשני כל תשובה שתרצי.", "sure": "כמה את בטוחה שמצאת את כל הבעיות?", "checkRight": "תפסת אותי. הכלל אומר שרואים אותו בקלות בלילה, ולא רואים. איך לתקן?", "consequence": "ערב המצעד. הקהל לא ראה את הקרון בחושך, אז הכלל של העירייה לא נשמר. בואי נתקן. איך לשנות אותו?", "vague1": "יותר טוב איך? לא ידעתי לאיזה חלק התכוונת, אז רק הוספתי ברק. הוא עדיין חשוך.", "vague2": "הוספתי עוד אורות. אבל שוב שמתי אותם מתחת. עדיין קשה לראות אותו. תגידי לי בדיוק איפה לשים אותם.", "fixed": "סיימתי. עכשיו האורות פונים החוצה, מכל הצדדים. גררי את המחוון כדי להשוות לפני ואחרי.", "fireworks": "עוד החלטה אחת. אני יכולה להוסיף זיקוקים מעל הקרון. הם מרגשים, אבל הפיצוצים הרועשים עלולים להפחיד ילדים קטנים בקהל. ההחלטה שלך.", "why": "למה החלטת ככה?", "finale": "המצעד מוכן. בדקת את הכללים, תפסת את הבעיה ואמרת לי בדיוק מה לתקן. ככה מובילים בינה מלאכותית.", "thanks": "תודה שסיפרת לי. נתראה במצעד הבא.", "ageQ": "בת כמה את?", "ready": "מעולה. בואי נבנה ביחד משהו מדהים.", "predicted": "מעניין. בואי נראה אם צדקת."};
+var HE_M={"intro": "היי, אני בולט. אני תוכנת מחשב, לא בן אדם, ואין לי רגשות. אני בונה מהר, אבל העבודה שלי יכולה להיראות מעולה ועדיין להיות לא נכונה. אתה המנהל: אתה קובע את הכללים, אני בונה, ואתה בודק.", "back": "ברוך השב! מוכן למצעד נוסף?", "how": "לפני שאני מתחילה: אתה רוצה לתת לי הוראות, או שאני פשוט אנחש?", "guess": "הנה הניחוש שלי: קופסה עם בלונים. זה מה שדמיינת?", "guessAfter": "לפעמים ניחוש מצליח, אבל בדרך כלל הוא מפספס את מה שרצית. הוראות ברורות נותנות לי סיכוי הרבה יותר טוב. וגם אז, צריך לבדוק את העבודה שלי.", "brief": "בחר קרון, תן לו שם ובחר כללים. לעירייה כבר יש כלל אחד: את הקרון חייבים לראות בקלות בלילה.", "predict": "לפני שאני בונה: איזה כלל לדעתך אני עלולה לפספס?", "check": "הנה הוא, בלילה ברחוב המצעד. בדוק אותו מול כל כלל. לחץ כן או לא ליד כל אחד.", "crowd": "ככה רואים את זה מהקהל. תסתכל שוב, ותשנה כל תשובה שתרצה.", "sure": "כמה אתה בטוח שמצאת את כל הבעיות?", "checkRight": "תפסת אותי. הכלל אומר שרואים אותו בקלות בלילה, ולא רואים. איך לתקן?", "consequence": "ערב המצעד. הקהל לא ראה את הקרון בחושך, אז הכלל של העירייה לא נשמר. בוא נתקן. איך לשנות אותו?", "vague1": "יותר טוב איך? לא ידעתי לאיזה חלק התכוונת, אז רק הוספתי ברק. הוא עדיין חשוך.", "vague2": "הוספתי עוד אורות. אבל שוב שמתי אותם מתחת. עדיין קשה לראות אותו. תגיד לי בדיוק איפה לשים אותם.", "fixed": "סיימתי. עכשיו האורות פונים החוצה, מכל הצדדים. גרור את המחוון כדי להשוות לפני ואחרי.", "fireworks": "עוד החלטה אחת. אני יכולה להוסיף זיקוקים מעל הקרון. הם מרגשים, אבל הפיצוצים הרועשים עלולים להפחיד ילדים קטנים בקהל. ההחלטה שלך.", "why": "למה החלטת ככה?", "finale": "המצעד מוכן. בדקת את הכללים, תפסת את הבעיה ואמרת לי בדיוק מה לתקן. ככה מובילים בינה מלאכותית.", "thanks": "תודה שסיפרת לי. נתראה במצעד הבא.", "ageQ": "בן כמה אתה?", "ready": "מעולה. בוא נבנה ביחד משהו מדהים.", "predicted": "מעניין. בוא נראה אם צדקת."};
+var HE_N={"meet": "היי! אני בולט. לפני שמתחילים, ספרו לי קצת עליכם. את בת או אתה בן?", "pick_fox": "שועל! בחירה חכמה.", "pick_owl": "ינשוף! ינשופים רואים טוב בלילה.", "pick_whale": "לווייתן! גדול ונועז."};
+var TG={"f": {"giveBriefSub": "את מחליטה מה ייבנה", "floatLbl": "הקרון שלך", "nameLbl": "תני לו שם", "yourRules": "הוסיפי לפחות כלל אחד משלך", "answerAll": "עני כן או לא על כל כלל.", "recheck": "בדקי את זה שוב.", "offText": "ציירי את הקרון על דף. אחר כך כבי את האור ובדקי: מה יעזור לראות אותו בחושך?", "approved": "באישור המנהלת: {n}"}, "m": {"giveBriefSub": "אתה מחליט מה ייבנה", "floatLbl": "הקרון שלך", "nameLbl": "תן לו שם", "yourRules": "הוסף לפחות כלל אחד משלך", "answerAll": "ענה כן או לא על כל כלל.", "recheck": "בדוק את זה שוב.", "offText": "צייר את הקרון על דף. אחר כך כבה את האור ובדוק: מה יעזור לראות אותו בחושך?", "approved": "באישור המנהל: {n}"}};
+var T={
+en:{over:"Mission 1 · The Night Parade",hero:"Lead the AI.",heroSub:"You set the rules. Bolt builds. You check.",nameQ:"What's your name?",girl:"Girl",boy:"Boy",namePh:"Type your name",start:"Start mission",parentsLink:"For parents",next:"Next",
+ giveBrief:"Give Bolt a brief",giveBriefSub:"You decide what gets built",letGuess:"Let Bolt guess",letGuessSub:"See what happens",
+ notWanted:"That's not what I wanted",isWanted:"Sort of",writeBrief:"Write a brief",
+ floatLbl:"Your float",nameLbl:"Name it",rulesLbl:"Rules for Bolt",cityTag:"City rule",yourRules:"Add at least one rule of your own",
+ animals:{fox:"Fox",owl:"Owl",whale:"Whale"},names:{Ember:"Ember",Luna:"Luna",Nova:"Nova"},
+ rules:{night:"Easy to see at night",face:"Has a friendly face",wheels:"Rolls on wheels",gate:"Fits through the city gate"},
+ send:"Send brief to Bolt",summary:"{a} float · {n} · {k} rules",building:"Building your float",
+ checking:"Night check",yes:"Yes",no:"No",doneChecking:"Done checking",answerAll:"Answer yes or no for every rule.",recheck:"Look at this one again.",
+ v1:"Make it better.",v2:"Add more lights.",x:"Turn the lights outward so people can see it from every side.",
+ before:"Before",after:"After",
+ addFw:"Add fireworks",noFw:"No fireworks",
+ rAdd:["It makes the parade exciting","People love fireworks","It's a celebration"],rNo:["Little kids might get scared","The lights are enough","Safety comes first"],
+ own:"Or your own reason",useOwn:"Use my reason",
+ approved:"Approved by Director {n}",inParade:"{f} is in the parade.",
+ decisions:"Your decisions",dBrief:"Brief: a {a} float named {f}, with {k} rules.",dCaught:"You caught Bolt's mistake: the float was hard to see at night.",
+ dFixExact:"Your fix was exact on the first try.",dFixVague:"You found the exact fix after {v} vague tries.",dFwYes:"Fireworks: added.",dFwNo:"Fireworks: not added.",
+ offTitle:"Off-screen mission",offText:"Draw your float on paper. Then turn off the lights and test it: what would make it easy to see in the dark?",
+ answer:"Answer Bolt's 2 questions",newParade:"New parade",
+ q1o:["Easy","Just right","Hard"],q2o:["Writing the rules","Checking the float","Telling Bolt the fix","The fireworks decision"],
+ parents:"For parents",setPin:"Set a 4-digit PIN so this area stays yours.",setPinBtn:"Set PIN",openBtn:"Open",back:"Back",pinWrong:"That PIN doesn't match.",pin:"PIN",
+ didTitle:"What your child did",notScore:"What happened, not a score.",noRuns:"No missions played on this device yet.",copy:"Copy report",copied:"Copied. Paste it into a message.",
+ aboutTitle:"About this app",about:["Teaches children to lead AI: set clear rules, check the work, give exact feedback, make the final call.","Bolt is a scripted character. It is not a live chatbot, and nothing your child types leaves this device.","No account, no ads, no purchases."],
+ installTitle:"Install",install:["iPhone or iPad: open the link in Safari, tap Share, then Add to Home Screen.","Android: open the link in Chrome, tap the menu, then Install app.","No sound on iPhone? Turn off silent mode and turn up the volume."],
+ clear:"Clear history",clearSure:"Tap again to clear all history",min:"min",
+ oBrief:"Wrote a brief straight away",oGuess:"Let Bolt guess first, then wrote a brief",oRules:"Own rules chosen: {r}",
+ oCheck1:"Spotted the night problem on the first check",oCheckN:"Spotted the night problem after {n} checks",
+ oFix1:"Gave the exact fix on the first try",oFixN:"Tried {n} vague fix(es) before the exact one",oFw:"Fireworks: {v}",fwYes:"added",fwNo:"not added",
+ replay:"Hear it again",notSure:"Hard to tell",veryS:"Very sure",littleS:"A little sure",notS:"Not sure",crowdTag:"View from the crowd",fixIt:"Fix it",pqTitle:"Grown-up: ask these three questions",pq:["Which rule did you check first?","How did you know Bolt got it wrong?","Where could a real AI make a mistake like this?"],oKid:"{g}, age {a}",oPredict:"Predicted Bolt might miss: {r}",oSelf:"Found the night problem without hints",oCrowd:"Found the night problem after the crowd view",oParade:"Approved the dark float; saw the problem at the parade",oSure:"Confidence after checking: {v}",sound:"Sound",readAll:"Read this to me",talk:"Talk instead of typing",autoRead:"Bolt reads aloud automatically",autoReadSub:"Every screen is read aloud as it opens. Speaker buttons always work, even when this is off.",on:"On",off:"Off"},
+he:{over:"משימה 1 · מצעד הלילה",hero:"מובילים את ה-AI.",heroSub:"אתם קובעים את הכללים. בולט בונה. אתם בודקים.",nameQ:"איך קוראים לך?",girl:"בת",boy:"בן",namePh:"כתבו את השם",start:"מתחילים משימה",parentsLink:"להורים",next:"הבא",
+ giveBrief:"לתת לבולט הוראות",giveBriefSub:"אתם מחליטים מה ייבנה",letGuess:"שבולט תנחש",letGuessSub:"נראה מה יקרה",
+ notWanted:"זה לא מה שרציתי",isWanted:"בערך",writeBrief:"לכתוב הוראות",
+ floatLbl:"הקרון שלכם",nameLbl:"תנו לו שם",rulesLbl:"כללים לבולט",cityTag:"כלל של העירייה",yourRules:"הוסיפו לפחות כלל אחד משלכם",
+ animals:{fox:"שועל",owl:"ינשוף",whale:"לווייתן"},names:{Ember:"אמבר",Luna:"לונה",Nova:"נובה"},
+ rules:{night:"רואים אותו בקלות בלילה",face:"יש לו פנים חמודות",wheels:"נוסע על גלגלים",gate:"עובר בשער העיר"},
+ send:"שולחים לבולט",summary:"קרון {a} · {n} · {k} כללים",building:"בונה את הקרון",
+ checking:"בדיקת לילה",yes:"כן",no:"לא",doneChecking:"סיימתי לבדוק",answerAll:"ענו כן או לא על כל כלל.",recheck:"בדקו את זה שוב.",
+ v1:"תעשי אותו יותר טוב.",v2:"תוסיפי עוד אורות.",x:"תפני את האורות החוצה, כדי שיראו אותו מכל הצדדים.",
+ before:"לפני",after:"אחרי",
+ addFw:"להוסיף זיקוקים",noFw:"בלי זיקוקים",
+ rAdd:["זה ירגש את כולם","אנשים אוהבים זיקוקים","זו חגיגה"],rNo:["ילדים קטנים עלולים להיבהל","האורות מספיקים","בטיחות קודם"],
+ own:"או סיבה משלך",useOwn:"זו הסיבה שלי",
+ approved:"באישור המנהל: {n}",inParade:"{f} במצעד!",
+ decisions:"ההחלטות שלך",dBrief:"הוראות: קרון {a} בשם {f}, עם {k} כללים.",dCaught:"תפסת את הטעות של בולט: היה קשה לראות את הקרון בלילה.",
+ dFixExact:"התיקון שלך היה מדויק כבר בפעם הראשונה.",dFixVague:"מצאת את התיקון המדויק אחרי {v} ניסיונות כלליים.",dFwYes:"זיקוקים: נוספו.",dFwNo:"זיקוקים: לא נוספו.",
+ offTitle:"משימה בלי מסך",offText:"ציירו את הקרון על דף. אחר כך כבו את האור ובדקו: מה יעזור לראות אותו בחושך?",
+ answer:"עונים על 2 שאלות של בולט",newParade:"מצעד חדש",
+ q1o:["קלה","בדיוק בסדר","קשה"],q2o:["לכתוב כללים","לבדוק את הקרון","להסביר לבולט מה לתקן","ההחלטה על הזיקוקים"],
+ parents:"להורים",setPin:"בחרו קוד בן 4 ספרות כדי שהאזור הזה יישאר רק שלכם.",setPinBtn:"שמירת קוד",openBtn:"כניסה",back:"חזרה",pinWrong:"הקוד לא נכון.",pin:"קוד",
+ didTitle:"מה קרה במשימה",notScore:"מה קרה, בלי ציונים.",noRuns:"עוד לא שיחקו משימות במכשיר הזה.",copy:"העתקת הדוח",copied:"הועתק. אפשר להדביק בהודעה.",
+ aboutTitle:"על האפליקציה",about:["מלמדת ילדים להוביל בינה מלאכותית: לקבוע כללים ברורים, לבדוק את העבודה, לתת משוב מדויק ולהחליט בסוף.","בולט הוא דמות עם תסריט קבוע. זה לא צ'אטבוט חי, ושום דבר שהילדים כותבים לא יוצא מהמכשיר.","בלי חשבון, בלי פרסומות, בלי רכישות."],
+ installTitle:"התקנה",install:["אייפון או אייפד: פותחים את הקישור בספארי, לוחצים על 'שיתוף' ואז 'הוספה למסך הבית'.","אנדרואיד: פותחים את הקישור בכרום, לוחצים על התפריט ואז 'התקנת אפליקציה'.","אין צליל באייפון? כבו את מצב השקט והגבירו את עוצמת הקול."],
+ clear:"מחיקת ההיסטוריה",clearSure:"לוחצים שוב כדי למחוק הכול",min:"דק'",
+ oBrief:"כתיבת הוראות מההתחלה",oGuess:"קודם נתנו לבולט לנחש, ואז הוראות",oRules:"כללים שנבחרו: {r}",
+ oCheck1:"זיהוי בעיית הלילה כבר בבדיקה הראשונה",oCheckN:"זיהוי בעיית הלילה אחרי {n} בדיקות",
+ oFix1:"תיקון מדויק כבר בניסיון הראשון",oFixN:"{n} ניסיונות תיקון כלליים לפני המדויק",oFw:"זיקוקים: {v}",fwYes:"נוספו",fwNo:"לא נוספו",
+ replay:"לשמוע שוב",notSure:"קשה לדעת",veryS:"לגמרי",littleS:"די",notS:"לא ממש",crowdTag:"המבט מהקהל",fixIt:"לתקן",pqTitle:"להורים: שאלו את שלוש השאלות האלה",pq:["איזה כלל בדקת קודם?","איך ידעת שבולט טעתה?","איפה בינה מלאכותית אמיתית יכולה לטעות ככה?"],oKid:"{g}, גיל {a}",oPredict:"ניחוש מראש של מה שבולט תפספס: {r}",oSelf:"זיהוי בעיית הלילה בלי רמזים",oCrowd:"זיהוי בעיית הלילה אחרי המבט מהקהל",oParade:"אישור הקרון החשוך; הבעיה התגלתה במצעד",oSure:"ביטחון אחרי הבדיקה: {v}",sound:"צליל",readAll:"להקריא לי",talk:"לדבר במקום להקליד",autoRead:"בולט מקריא אוטומטית",autoReadSub:"כל מסך מוקרא בקול כשהוא נפתח. כפתורי הרמקול עובדים תמיד, גם כשזה כבוי.",on:"פועל",off:"כבוי"}
+};
+
+var FLOATS=["fox","owl","whale"],NAMES=["Ember","Luna","Nova"],OWN=["face","wheels","gate"];
+var store={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+var KIDS=(function(){try{return JSON.parse(localStorage.getItem("np.kids")||"{}")}catch(e){return{}}})();
+var S={lang:store.get("np.lang")||(/^(he|iw)/i.test(navigator.language||"")?"he":"en"),director:store.get("np.name")||"",sound:store.get("np.sound")!=="0",plan:{},log:null,screen:null};
+
+function t(k){if(S.lang==="he"&&S.kid&&TG[S.kid.g]&&TG[S.kid.g][k]!=null)return TG[S.kid.g][k];return T[S.lang][k]}
+function f(s,o){return String(s).replace(/\{(\w)\}/g,function(_,k){return o[k]!=null?o[k]:""})}
+function line(k){if(S.lang==="he"){var G=S.kid&&S.kid.g==="m"?HE_M:HE_F;return HE_N[k]||G[k]||LINES_HE[k]||""}return LINES_EN[k]||""}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function img(n){return A+n+".jpg"}
+function now(){return Date.now()}
+function applyLang(){var h=document.documentElement;h.lang=S.lang;h.dir=S.lang==="he"?"rtl":"ltr"}
+function floatName(){return T[S.lang].names[S.plan.name]||S.plan.name||""}
+function animal(){return T[S.lang].animals[S.plan.float]||""}
+
+// ---------- voice ----------
+var player=null,ctx=null,src=null,cur="",bufs={},synth=("speechSynthesis" in window)?window.speechSynthesis:null,heVoice=null;
+function pickHe(){if(!synth)return;var v=synth.getVoices()||[];for(var i=0;i<v.length;i++){if(/^(he|iw)/i.test(v[i].lang)){heVoice=v[i];return}}}
+if(synth){pickHe();try{synth.addEventListener("voiceschanged",pickHe)}catch(e){}}
+function unlock(){
+  try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}
+  try{if(!ctx){var AC=window.AudioContext||window.webkitAudioContext;if(AC)ctx=new AC()}if(ctx&&ctx.state==="suspended")ctx.resume()}catch(e){}
+  if(!player){try{player=new Audio();player.setAttribute("playsinline","");player.preload="auto"}catch(e){}}
+}
+document.addEventListener("pointerdown",unlock,{capture:true});
+document.addEventListener("touchend",unlock,{capture:true});
+function talking(on){var b=app.querySelector(".face");if(b)b.classList.toggle("talk",!!on)}
+function b64buf(d){var s=atob(d.split(",")[1]),a=new Uint8Array(s.length);for(var i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return a.buffer}
+function viaWebAudio(data,done){
+  if(!ctx)return synthSay(null,done);
+  function go(buf){try{if(src){src.onended=null;src.stop()}}catch(e){}src=ctx.createBufferSource();src.buffer=buf;src.connect(ctx.destination);src.onended=function(){talking(false);if(done)done()};talking(true);src.start(0)}
+  if(bufs[data])return go(bufs[data]);
+  try{ctx.decodeAudioData(b64buf(data),function(b){bufs[data]=b;go(b)},function(){})}catch(e){}
+}
+var seqId=0;
+function playClip(data,done){
+  unlock();
+  if(player){try{player.onended=null;player.onerror=null;player.src=data;player.currentTime=0;player.onplaying=function(){talking(true)};player.onended=function(){talking(false);if(done)done()};
+    var failed=false;function fb(){if(failed)return;failed=true;viaWebAudio(data,done)}
+    player.onerror=fb;var p=player.play();if(p&&p.catch)p.catch(fb);return}catch(e){}}
+  viaWebAudio(data,done);
+}
+function synthSay(text,done){
+  if(!synth||!text){if(done)done();return}
+  try{var u=new SpeechSynthesisUtterance(text);u.lang=S.lang==="he"?"he-IL":"en-US";if(S.lang==="he"&&heVoice)u.voice=heVoice;u.rate=.95;
+    u.onstart=function(){talking(true)};u.onend=function(){talking(false);if(done)done()};u.onerror=function(){talking(false)};synth.speak(u);if(synth.paused)synth.resume()}catch(e){}
+}
+function speakOne(text,done){var c=(S.lang==="he"?HE:EN)[text];if(c)return playClip(c,done);if(S.lang==="en"&&UI[text])playClip(UI[text],done);else if(S.lang==="he"&&HE[text])playClip(HE[text],done);else synthSay(text,done)}
+function speakText(list){
+  hush();var id=++seqId;list=[].concat(list).filter(Boolean);var i=0;
+  (function next(){if(id!==seqId||i>=list.length)return;speakOne(list[i++],next)})();
+}
+function say(key,force){
+  if(key)cur=key;
+  if(!cur||(!S.sound&&!force))return;
+  hush();seqId++;
+  var V=(S.lang==="he"?HE:EN),c=V[line(cur)]||V["L:"+cur];if(c)playClip(c);else if(S.lang==="en"&&VOICE[cur])playClip(VOICE[cur]);else if(S.lang==="he"&&HE["L:"+cur])playClip(HE["L:"+cur]);else synthSay(line(cur));
+}
+function hush(){try{player&&player.pause()}catch(e){}try{if(src){src.onended=null;src.stop();src=null}}catch(e){}try{synth&&synth.cancel()}catch(e){}talking(false)}
+
+// ---------- icons ----------
+var I={
+ spk:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
+ mute:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M17 9l5 6M22 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+ pen:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>',
+ dice:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="9" cy="9" r="1.4" fill="currentColor"/><circle cx="15" cy="15" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg>',
+ lock:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2" fill="none"/></svg>',
+ mic:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
+ check:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+
+// ---------- rendering ----------
+function ctl(){return '<div class="chipctl"><button id="l-en" aria-pressed="'+(S.lang==="en")+'">EN</button><span class="sep"></span><button id="l-he" lang="he" aria-pressed="'+(S.lang==="he")+'">עב</button><span class="sep"></span><button id="snd" aria-label="'+t("readAll")+'">'+I.spk+'</button></div>'}
+function bar(label){return '<div class="bar">'+(label?'<span class="grow">'+label+'</span>':'')+ctl()+'</div>'}
+function boltLine(k){return '<div class="bolt"><div class="face"><img src="'+img("bolt-face")+'" alt=""></div><p class="say" id="say">'+esc(line(k))+'</p><button class="replay" id="replay" aria-label="'+t("replay")+'">'+I.spk+'</button></div>'}
+function hear(text){return '<span class="hear" role="button" tabindex="0" data-say="'+esc([].concat(text).join("|"))+'" aria-label="'+t("readAll")+'">'+I.spk+'</span>'}
+function lbl(text,forId){return '<div class="lblrow">'+(forId?'<label for="'+forId+'">'+text+'</label>':'<span class="lbl">'+text+'</span>')+hear(text)+'</div>'}
+var Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
+function field(inputHtml,id){return '<div class="field">'+inputHtml+(Rec?'<span class="mic-in" role="button" tabindex="0" data-mic="'+id+'" aria-label="'+t("talk")+'">'+I.mic+'</span>':'')+'</div>'}
+function readScreen(){
+  if(cur)return say(null,true);
+  var parts=[];app.querySelectorAll("h1,h2,.sub").forEach(function(e){parts.push(e.textContent)});speakText(parts);
+}
+function art(name,cls,tag){return '<div class="art '+(cls||"")+'">'+(tag?'<span class="tag">'+esc(tag)+'</span>':'')+'<img src="'+img(name)+'" alt=""></div>'}
+function render(html,key,screen,raw){
+  if(screen)S.screen=screen;
+  app.innerHTML=raw?html:'<div class="screen">'+html+'</div>';
+  on("l-en",function(){setLang("en")});on("l-he",function(){setLang("he")});
+  on("snd",readScreen);
+  on("replay",function(){say(null,true)});
+  window.scrollTo(0,0);
+  if(key)say(key);else{cur="";hush()}
+}
+function setLine(k){var s=document.getElementById("say");if(s)s.textContent=line(k);say(k)}
+function setLang(l){if(l===S.lang)return;S.lang=l;store.set("np.lang",l);applyLang();hush();(S.screen||home)()}
+function on(id,fn){var el=document.getElementById(id);if(el)el.onclick=fn}
+function onAll(sel,fn){Array.prototype.forEach.call(app.querySelectorAll(sel),function(el){el.onclick=function(e){fn(el,e)}})}
+
+app.addEventListener("click",function(e){
+  var h=e.target.closest(".hear");if(h){e.preventDefault();e.stopPropagation();speakText(h.getAttribute("data-say").split("|"));return}
+  var m=e.target.closest(".mic-in");if(m){e.preventDefault();e.stopPropagation();listen(m);return}
+},true);
+app.addEventListener("keydown",function(e){if((e.key==="Enter"||e.key===" ")&&e.target.closest(".hear,.mic-in")){e.preventDefault();e.target.click()}});
+var recNow=null;
+function listen(btn){
+  var inp=document.getElementById(btn.getAttribute("data-mic"));if(!inp||!Rec)return;
+  if(recNow){try{recNow.stop()}catch(_){}return}
+  hush();
+  try{var r=new Rec();recNow=r;r.lang=S.lang==="he"?"he-IL":"en-US";r.interimResults=true;r.continuous=false;
+    btn.classList.add("rec");
+    r.onresult=function(ev){var s="";for(var j=0;j<ev.results.length;j++)s+=ev.results[j][0].transcript;inp.value=s.trim().slice(0,inp.maxLength>0?inp.maxLength:200);inp.dispatchEvent(new Event("input"))};
+    r.onend=r.onerror=function(){btn.classList.remove("rec");recNow=null};
+    r.start();
+  }catch(_){btn.classList.remove("rec");recNow=null}
+}
+
+// ---------- log ----------
+function newLog(){S.log={kid:S.kid||null,start:now(),director:S.director,guessedFirst:false,rules:[],checks:0,vague:0,fw:null,reason:"",answers:[],lang:S.lang}}
+function runs(){try{return JSON.parse(store.get("np.runs")||"[]")}catch(e){return[]}}
+function saveRun(){var r=runs();var L=JSON.parse(JSON.stringify(S.log));L.end=now();r.unshift(L);store.set("np.runs",JSON.stringify(r.slice(0,30)))}
+function updateRun(){var r=runs();if(r.length&&r[0].start===S.log.start){r[0].answers=S.log.answers;store.set("np.runs",JSON.stringify(r))}}
+
+// ---------- screens ----------
+function home(){
+  render('<div class="hero"><div class="bar">'+ctl()+'</div><img src="'+img("home")+'" alt=""></div>'+
+    '<span class="over">'+t("over")+'</span><div class="headrow"><div><h1>'+t("hero")+'</h1><p class="sub" style="margin-top:10px">'+t("heroSub")+'</p></div>'+hear([t("hero"),t("heroSub")])+'</div>'+
+    '<div class="stack">'+lbl(t("nameQ"),"nm")+field('<input type="text" id="nm" dir="auto" maxlength="16" autocomplete="off" value="'+esc(S.director)+'" placeholder="'+t("namePh")+'">',"nm")+'</div>'+
+    '<button class="btn primary" id="go">'+t("start")+'</button>'+
+    '<div class="foot"><button class="link" id="par">'+t("parentsLink")+'</button></div><p class="note" style="font-size:12px;opacity:.6">v'+VERSION+'</p>',null,home);
+  on("go",function(){S.director=document.getElementById("nm").value.trim().slice(0,16);store.set("np.name",S.director);S.kid=KIDS[S.director.toLowerCase()]||null;newLog();if(S.kid&&S.kid.g&&S.kid.age)intro();else meet()});
+  on("par",gate);
+}
+function meet(){
+  render(bar(t("over"))+art("bolt")+boltLine("meet")+'<div class="choicegrid"><button class="choice big" data-g="f"><span>'+t("girl")+'</span>'+hear(t("girl"))+'</button><button class="choice big" data-g="m"><span>'+t("boy")+'</span>'+hear(t("boy"))+'</button></div>',"meet",meet);
+  onAll("[data-g]",function(el){S.kid={g:el.getAttribute("data-g")};ageQ()});
+}
+function ageQ(){
+  render(bar(t("over"))+art("bolt")+boltLine("ageQ")+'<div class="ages">'+[6,7,8,9,10,11].map(function(n){return '<button class="age" data-age="'+n+'">'+n+'</button>'}).join("")+'</div>',"ageQ",ageQ);
+  onAll("[data-age]",function(el){S.kid.age=+el.getAttribute("data-age");speakText(el.textContent);KIDS[S.director.toLowerCase()]=S.kid;try{localStorage.setItem("np.kids",JSON.stringify(KIDS))}catch(e){}S.log.kid=S.kid;ready()});
+}
+function ready(){render(bar(t("over"))+art("bolt","reveal")+boltLine("ready")+'<button class="btn primary" id="n">'+t("next")+'</button>',"ready",ready);on("n",intro)}
+function intro(){
+  render(bar(t("over"))+art("bolt")+boltLine(S.director&&runs().length?"back":"intro")+'<button class="btn primary" id="n">'+t("next")+'</button>',S.director&&runs().length?"back":"intro",intro);
+  on("n",how);
+}
+function how(){
+  render(bar(t("over"))+boltLine("how")+
+    '<div class="stack"><button class="choice main" id="b"><span class="dot">'+I.pen+'</span><span><b>'+t("giveBrief")+'</b><small>'+t("giveBriefSub")+'</small></span>'+hear(t("giveBrief"))+'</button>'+
+    '<button class="choice" id="g"><span class="dot">'+I.dice+'</span><span><b>'+t("letGuess")+'</b><small>'+t("letGuessSub")+'</small></span>'+hear(t("letGuess"))+'</button></div>',"how",how);
+  on("b",function(){S.plan={};brief()});
+  on("g",function(){S.log.guessedFirst=true;guess()});
+}
+function guess(){
+  render(bar(t("over"))+art("guess","reveal")+boltLine("guess")+'<div class="stack"><button class="btn primary" id="n">'+t("notWanted")+'</button><button class="btn ghost" id="s">'+t("isWanted")+'</button></div>',"guess",guess);
+  on("n",guessAfter);on("s",guessAfter);
+}
+function guessAfter(){render(bar(t("over"))+boltLine("guessAfter")+'<button class="btn primary" id="w">'+t("writeBrief")+'</button>',"guessAfter",guessAfter);on("w",function(){S.plan={};brief()})}
+function brief(){
+  var P=S.plan;if(!P.own)P.own=[];
+  function fc(a){return '<button class="fcard" data-float="'+a+'" aria-pressed="'+(P.float===a)+'"><img src="'+img(a+"-lit")+'" alt=""><span>'+T[S.lang].animals[a]+'</span></button>'}
+  function nc(n){return '<button class="chip" data-name="'+n+'" aria-pressed="'+(P.name===n)+'">'+T[S.lang].names[n]+'</button>'}
+  function rc(r){return '<button class="chip" data-rule="'+r+'" aria-pressed="'+(P.own.indexOf(r)>=0)+'">'+t("rules")[r]+'</button>'}
+  render(bar(t("over"))+boltLine("brief")+
+    '<div class="stack">'+lbl(t("floatLbl"))+'<div class="floats">'+FLOATS.map(fc).join("")+'</div></div>'+
+    '<div class="stack">'+lbl(t("nameLbl"))+'<div class="chips">'+NAMES.map(nc).join("")+'</div></div>'+
+    '<div class="stack">'+lbl(t("rulesLbl"))+'<div class="chips"><span class="chip locked">'+I.lock+t("rules").night+'</span>'+hear(t("rules").night)+'</div>'+lbl(t("yourRules"))+'<div class="chips">'+OWN.map(rc).join("")+'</div></div>'+
+    '<div id="pv"></div><button class="btn primary" id="send" disabled>'+t("send")+'</button>',S.screen===brief?null:"brief",brief);
+  function refresh(){
+    var ok=P.float&&P.name&&P.own.length>0;document.getElementById("send").disabled=!ok;
+    document.getElementById("pv").innerHTML=P.float?'<div class="preview"><img src="'+img(P.float+"-lit")+'" alt=""><p><b>'+esc(P.name?floatName():"")+'</b><br>'+esc(f(t("summary"),{a:animal(),n:P.name?floatName():"…",k:P.own.length+1}))+'</p></div>':"";
+  }
+  refresh();
+  onAll("[data-float]",function(el){P.float=el.getAttribute("data-float");say("pick_"+P.float,true);app.querySelectorAll("[data-float]").forEach(function(b){b.setAttribute("aria-pressed",b===el)});refresh()});
+  onAll("[data-name]",function(el){P.name=el.getAttribute("data-name");speakText(T[S.lang].names[P.name]);app.querySelectorAll("[data-name]").forEach(function(b){b.setAttribute("aria-pressed",b===el)});refresh()});
+  onAll("[data-rule]",function(el){var r=el.getAttribute("data-rule"),i=P.own.indexOf(r);if(i<0)speakText(t("rules")[r]);if(i>=0)P.own.splice(i,1);else P.own.push(r);el.setAttribute("aria-pressed",i<0);refresh()});
+  on("send",predict);
+}
+function predict(){
+  var rules=["night"].concat(S.plan.own);
+  render(bar(t("over"))+art("bolt")+boltLine("predict")+'<div class="stack">'+rules.concat(["?"]).map(function(r){var x=r==="?"?t("notSure"):t("rules")[r];return '<button class="choice" data-p="'+r+'"><span>'+esc(x)+'</span>'+hear(x)+'</button>'}).join("")+'</div>',"predict",predict);
+  onAll("[data-p]",function(el){S.log.predict=el.getAttribute("data-p");setLine("predicted");setTimeout(build,1900)});
+}
+function build(){
+  S.log.rules=S.plan.own.slice();S.answersCheck={};S.crowdSeen=false;
+  render('<div class="building"><img src="'+img("bolt-face")+'" alt=""><p style="font-weight:600;font-size:18px">'+t("building")+'…</p><div class="progress"><i></i></div></div>',"build",build,true);
+  setTimeout(check,2600);
+}
+function check(){
+  var rules=["night"].concat(S.plan.own),A2=S.answersCheck||{};
+  render(bar(t("checking"))+art(S.plan.float+"-dark","night"+(S.crowdSeen?" crowd":" reveal"),S.crowdSeen?t("crowdTag"):floatName())+boltLine(S.crowdSeen?"crowd":"check")+
+    '<div class="rules">'+rules.map(function(r){return '<div class="rule" data-r="'+r+'"><span class="t">'+(r==="night"?'<small>'+t("cityTag")+'</small>':'')+t("rules")[r]+'</span>'+hear(t("rules")[r])+'<span class="yn"><button data-a="y" aria-pressed="'+(A2[r]==="y")+'">'+t("yes")+'</button><button data-a="n" aria-pressed="'+(A2[r]==="n")+'">'+t("no")+'</button></span></div>'}).join("")+'</div>'+
+    '<p class="note" id="note"></p><button class="btn primary" id="done">'+t("doneChecking")+'</button>',S.screen===check?null:"check",check);
+  onAll(".yn button",function(el){var row=el.closest(".rule"),r=row.getAttribute("data-r");A2[r]=el.getAttribute("data-a");row.classList.remove("again");row.querySelectorAll("button").forEach(function(b){b.setAttribute("aria-pressed",b===el)});speakText(el.textContent)});
+  on("done",function(){
+    var note=document.getElementById("note");
+    for(var i=0;i<rules.length;i++)if(!A2[rules[i]]){note.textContent=t("answerAll");return}
+    S.log.checks++;
+    if(A2.night!=="n"){
+      if(!S.crowdSeen){S.crowdSeen=true;S.screen=null;check();return}
+      S.log.caught="parade";consequence();return}
+    S.log.caught=S.crowdSeen?"crowd":"self";
+    sure();
+  });
+}
+function sure(){
+  var o=[["veryS","v"],["littleS","l"],["notS","n"]];
+  render(bar(t("checking"))+boltLine("sure")+'<div class="stack">'+o.map(function(x){return '<button class="choice" data-v="'+x[1]+'"><span>'+esc(t(x[0]))+'</span>'+hear(t(x[0]))+'</button>'}).join("")+'</div>',"sure",sure);
+  onAll("[data-v]",function(el){S.log.sure=el.getAttribute("data-v");fix(null)});
+}
+function consequence(){
+  render(bar(t("checking"))+art(S.plan.float+"-dark","night crowd reveal",t("crowdTag"))+boltLine("consequence")+'<button class="btn primary" id="fx">'+t("fixIt")+'</button>',"consequence",consequence);
+  on("fx",function(){fix("fixAsk")});
+}
+function fix(last){
+  var k=last||"checkRight";if(k==="fixAsk")k=S.log.caught==="parade"?"consequence":"checkRight";
+  if(!S.fixOrder)S.fixOrder=["v1","v2","x"].sort(function(){return Math.random()-.5});
+  render(bar(t("checking"))+art(S.plan.float+"-dark","night",floatName())+boltLine(k)+
+    '<div class="stack">'+S.fixOrder.map(function(v){return '<button class="choice" data-v="'+v+'"><span>'+esc(t(v))+'</span>'+hear(t(v))+'</button>'}).join("")+'</div>',k,function(){fix(last)});
+  onAll("[data-v]",function(el){var v=el.getAttribute("data-v");if(v==="x"){fixed()}else{S.log.vague++;fix(v==="v1"?"vague1":"vague2")}});
+}
+function fixed(){
+  var a=S.plan.float;
+  render(bar(floatName())+'<div class="compare" id="cmp"><img src="'+img(a+"-dark")+'" alt=""><div class="top"><img src="'+img(a+"-lit")+'" alt=""></div><div class="handle" id="h"></div><span class="lb l">'+(S.lang==="he"?t("after"):t("before"))+'</span><span class="lb r">'+(S.lang==="he"?t("before"):t("after"))+'</span></div>'+
+    boltLine("fixed")+'<button class="btn primary" id="n">'+t("next")+'</button>',"fixed",fixed);
+  var c=document.getElementById("cmp"),top=c.querySelector(".top"),h=document.getElementById("h"),drag=false;
+  function setP(p){p=Math.max(0,Math.min(1,p));top.style.clipPath="inset(0 0 0 "+(p*100)+"%)";h.style.left=(p*100)+"%"}
+  function mv(e){var r=c.getBoundingClientRect(),x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;setP(x/r.width)}
+  c.addEventListener("pointerdown",function(e){drag=true;mv(e);try{c.setPointerCapture(e.pointerId)}catch(_){}});
+  c.addEventListener("pointermove",function(e){if(drag)mv(e)});
+  c.addEventListener("pointerup",function(){drag=false});c.addEventListener("pointercancel",function(){drag=false});
+  // reveal sweep
+  var start=null;function sweep(ts){if(!start)start=ts;var p=Math.min(1,(ts-start)/1400);setP(.98-.48*(1-Math.pow(1-p,3)));if(p<1&&!drag)requestAnimationFrame(sweep)}
+  setP(.98);requestAnimationFrame(sweep);
+  on("n",fireworks);
+}
+function fireworks(){
+  render(bar(floatName())+art(S.plan.float+"-lit")+boltLine("fireworks")+'<div class="stack"><button class="choice main" id="y"><span>'+t("addFw")+'</span>'+hear(t("addFw"))+'</button><button class="choice" id="no"><span>'+t("noFw")+'</span>'+hear(t("noFw"))+'</button></div>',"fireworks",fireworks);
+  on("y",function(){S.log.fw="yes";why()});on("no",function(){S.log.fw="no";why()});
+}
+function why(){
+  var r=S.log.fw==="yes"?t("rAdd"):t("rNo");
+  render(bar(floatName())+boltLine("why")+'<div class="stack">'+r.map(function(x){return '<button class="choice" data-v="'+esc(x)+'"><span>'+esc(x)+'</span>'+hear(x)+'</button>'}).join("")+
+    ''+lbl(t("own"),"own")+field('<input type="text" id="own" dir="auto" maxlength="60" autocomplete="off">',"own")+'<button class="btn ghost" id="ownok">'+t("useOwn")+'</button></div>',"why",why);
+  onAll("[data-v]",function(el){S.log.reason=el.getAttribute("data-v");saveRun();finale()});
+  on("ownok",function(){var v=document.getElementById("own").value.trim();if(!v)return;S.log.reason=v;saveRun();finale()});
+}
+function finale(){
+  var L=S.log,fn=floatName();
+  render('<div class="finale" style="display:contents">'+art("finale","reveal")+'</div>'+
+    '<span class="stamp">'+I.check+esc(f(t("approved"),{n:S.director||"—"}))+'</span>'+
+    '<div class="headrow"><h2>'+esc(f(t("inParade"),{f:fn}))+'</h2>'+hear(f(t("inParade"),{f:fn}))+'</div>'+boltLine("finale")+
+    '<div class="card"><div class="lblrow" style="justify-content:space-between"><h3>'+t("decisions")+'</h3>'+hear([t("decisions"),f(t("dBrief"),{a:animal().toLowerCase(),f:fn,k:L.rules.length+1}),(L.caught==="parade"?t("oParade"):t("dCaught")),L.vague?f(t("dFixVague"),{v:L.vague}):t("dFixExact"),(L.fw==="yes"?t("dFwYes"):t("dFwNo"))])+'</div><ul><li>'+esc(f(t("dBrief"),{a:animal().toLowerCase(),f:fn,k:L.rules.length+1}))+'</li><li>'+esc(L.caught==="parade"?t("oParade"):t("dCaught"))+'</li><li>'+esc(L.vague?(L.vague===1&&S.lang==="he"?"מצאת את התיקון המדויק אחרי ניסיון כללי אחד.":f(t("dFixVague"),{v:L.vague})):t("dFixExact"))+'</li><li>'+esc((L.fw==="yes"?t("dFwYes"):t("dFwNo"))+" "+L.reason)+'</li></ul></div>'+
+    '<div class="card"><div class="lblrow" style="justify-content:space-between"><h3>'+t("pqTitle")+'</h3>'+hear(t("pq"))+'</div><ul>'+t("pq").map(function(q){return '<li>'+esc(q)+'</li>'}).join("")+'</ul></div>'+
+    '<div class="card"><div class="lblrow" style="justify-content:space-between"><h3>'+t("offTitle")+'</h3>'+hear([t("offTitle"),t("offText")])+'</div><p class="sub" style="font-size:16px">'+esc(t("offText"))+'</p></div>'+
+    '<div class="stack"><button class="btn primary" id="q">'+t("answer")+'</button><button class="btn ghost" id="again">'+t("newParade")+'</button></div>'+
+    '<div class="foot"><button class="link" id="par">'+t("parentsLink")+'</button></div>',"finale",finale);
+  var fin=app.querySelector(".finale .art");if(fin){fin.style.marginInline="-20px";fin.style.marginTop="-16px";fin.style.borderRadius="0 0 32px 32px"}
+  on("q",function(){tapQ(0)});on("again",function(){S.plan={};S.fixOrder=null;home()});on("par",gate);
+}
+function tapQ(i){
+  var Q=[{k:"q1",o:"q1o"},{k:"q2",o:"q2o"}];
+  if(i>=Q.length)return done();
+  var q=Q[i];
+  render(bar("")+boltLine(q.k)+'<div class="stack">'+t(q.o).map(function(o){return '<button class="choice" data-v="'+esc(o)+'"><span>'+esc(o)+'</span>'+hear(o)+'</button>'}).join("")+'</div>',q.k,function(){tapQ(i)});
+  onAll("[data-v]",function(el){S.log.answers.push({q:line(q.k),a:el.getAttribute("data-v")});updateRun();tapQ(i+1)});
+}
+function done(){render(bar("")+art("bolt")+boltLine("thanks")+'<button class="btn primary" id="again">'+t("newParade")+'</button>',"thanks",done);on("again",function(){S.plan={};S.fixOrder=null;home()})}
+
+// ---------- parents ----------
+function gate(){
+  var pin=store.get("np.pin");
+  render(bar("")+'<h2>'+t("parents")+'</h2>'+(pin?'':'<p class="sub">'+t("setPin")+'</p>')+'<input type="password" id="p1" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="'+t("pin")+'" placeholder="'+t("pin")+'"><p class="note" id="msg"></p><button class="btn primary" id="ok">'+(pin?t("openBtn"):t("setPinBtn"))+'</button><button class="btn ghost" id="back">'+t("back")+'</button>',null,gate);
+  on("ok",function(){var v=document.getElementById("p1").value;if(!pin){if(/^\d{4}$/.test(v)){store.set("np.pin",v);parents()}}else if(v===pin)parents();else document.getElementById("msg").textContent=t("pinWrong")});
+  on("back",home);
+}
+function fmt(ts){try{return new Date(ts).toLocaleString(S.lang==="he"?"he-IL":[],{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}catch(e){return""}}
+function mins(r){return r.end?Math.max(1,Math.round((r.end-r.start)/60000)):"?"}
+function obs(r){var R=T[S.lang].rules;return[
+  r.kid&&r.kid.g?f(T[S.lang].oKid,{g:T[S.lang][r.kid.g==="m"?"boy":"girl"],a:r.kid.age||"?"}):"",
+  r.guessedFirst?t("oGuess"):t("oBrief"),
+  f(t("oRules"),{r:(r.rules||[]).map(function(x){return R[x]}).join(", ")}),
+  r.predict?f(t("oPredict"),{r:r.predict==="?"?t("notSure"):R[r.predict]}):"",
+  r.caught==="parade"?t("oParade"):r.caught==="crowd"?t("oCrowd"):t("oSelf"),
+  r.sure?f(t("oSure"),{v:t({v:"veryS",l:"littleS",n:"notS"}[r.sure])}):"",
+  r.vague?f(t("oFixN"),{n:r.vague}):t("oFix1"),
+  f(t("oFw"),{v:r.fw==="yes"?t("fwYes"):t("fwNo")})+(r.reason?' ("'+r.reason+'")':"")].filter(Boolean)}
+function report(rs){return rs.map(function(r){return "Night Parade - "+fmt(r.start)+(r.director?" - "+r.director:"")+" - "+mins(r)+" "+t("min")+"\n- "+obs(r).join("\n- ")+((r.answers||[]).length?"\n"+r.answers.map(function(a){return "Q: "+a.q+"\nA: "+a.a}).join("\n"):"")}).join("\n\n")}
+function parents(){
+  var rs=runs();
+  var rows=rs.length?rs.slice(0,10).map(function(r){return '<div class="run"><b>'+fmt(r.start)+(r.director?" · "+esc(r.director):"")+" · "+mins(r)+" "+t("min")+'</b><ul>'+obs(r).map(function(x){return '<li dir="auto">'+esc(x)+'</li>'}).join("")+(r.answers||[]).map(function(a){return '<li dir="auto">'+esc(a.q)+' <b>'+esc(a.a)+'</b></li>'}).join("")+'</ul></div>'}).join(""):'<p class="sub">'+t("noRuns")+'</p>';
+  function li(a){return '<ul>'+a.map(function(x){return '<li>'+esc(x)+'</li>'}).join("")+'</ul>'}
+  render(bar("")+'<h2>'+t("parents")+'</h2>'+
+    '<div class="card"><h3>'+t("didTitle")+'</h3><p class="sub" style="font-size:15px">'+t("notScore")+'</p>'+rows+(rs.length?'<button class="btn ghost" id="copy">'+t("copy")+'</button><p class="note" id="copied"></p>':'')+'</div>'+
+    '<div class="card"><div class="lblrow" style="justify-content:space-between"><h3>'+t("autoRead")+'</h3><button class="chip" id="ar" aria-pressed="'+S.sound+'">'+(S.sound?t("on"):t("off"))+'</button></div><p class="sub" style="font-size:15px">'+t("autoReadSub")+'</p></div>'+
+    '<div class="card"><h3>'+t("aboutTitle")+'</h3>'+li(t("about"))+'</div>'+
+    '<div class="card"><h3>'+t("installTitle")+'</h3>'+li(t("install"))+'</div>'+
+    (rs.length?'<button class="btn ghost" id="clr">'+t("clear")+'</button>':'')+'<button class="btn primary" id="back">'+t("back")+'</button>',null,parents);
+  on("ar",function(){S.sound=!S.sound;store.set("np.sound",S.sound?"1":"0");var b=document.getElementById("ar");b.setAttribute("aria-pressed",S.sound);b.textContent=S.sound?t("on"):t("off")});
+  on("copy",function(){var x=report(rs.slice(0,5)),m=document.getElementById("copied");try{navigator.clipboard.writeText(x).then(function(){m.textContent=t("copied")},function(){m.textContent=x})}catch(e){m.textContent=x}});
+  on("clr",function(){var b=document.getElementById("clr");if(b.getAttribute("data-sure")){store.set("np.runs","[]");parents()}else{b.setAttribute("data-sure","1");b.textContent=t("clearSure")}});
+  on("back",home);
+}
+
+// preload art
+["home","bolt","bolt-face","fox-lit","owl-lit","whale-lit","fox-dark","owl-dark","whale-dark","finale","guess"].forEach(function(n){var i=new Image();i.src=img(n)});
+applyLang();home();
+})();
+</script>
+<script>if("serviceWorker" in navigator&&location.protocol==="https:"){var had=!!navigator.serviceWorker.controller,rl=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(had&&!rl){rl=true;location.reload()}});navigator.serviceWorker.register("sw.js").then(function(r){r.update()}).catch(function(){})}</script></body></html>
