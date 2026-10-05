@@ -21,7 +21,7 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
-      - run: mkdir _site && cp -r *.html manifest.webmanifest sw.js icon-*.png assets _site/ && rm -f _site/workshop.src.html && (cp api.json _site/ 2>/dev/null || true)
+      - run: mkdir _site && cp -r *.html manifest.webmanifest sw.js icon-*.png assets _site/ && (cp -r voicetest _site/ 2>/dev/null || true) && rm -f _site/workshop.src.html && (cp api.json _site/ 2>/dev/null || true)
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
