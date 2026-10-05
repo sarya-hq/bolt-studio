@@ -146,6 +146,12 @@ export default {
         const img = await draw(env, b.prompt, b.seed);
         return new Response(img, { headers: { "Content-Type": "image/jpeg", ...cors(req) } });
       }
+      if (url.pathname === "/api/listen-token" && req.method === "POST") {
+        // Short-lived (10 min) token so the phone can stream speech to Azure and see words as they are spoken.
+        const r = await fetch(`https://${env.AZURE_SPEECH_REGION}.api.cognitive.microsoft.com/sts/v1.0/issueToken`, { method: "POST", headers: { "Ocp-Apim-Subscription-Key": env.AZURE_SPEECH_KEY, "Content-Length": "0" } });
+        if (!r.ok) throw new Error("token " + r.status);
+        return json(req, { token: await r.text(), region: env.AZURE_SPEECH_REGION });
+      }
       if (url.pathname === "/api/hear" && req.method === "POST") {
         const b = await req.json();
         if (!b.audio || b.audio.length > 4_000_000) return json(req, { error: "no audio" }, 400);

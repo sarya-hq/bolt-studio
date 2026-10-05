@@ -89,6 +89,25 @@ html[lang="he"] .over{letter-spacing:0}
 textarea{width:100%;min-height:96px;border-radius:20px;border:1.5px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink);font:500 18px var(--font);padding:14px 16px;resize:none;outline:none}
 textarea:focus{border-color:rgba(139,123,255,.7)}
 input[type=text]{width:100%;height:58px;border-radius:20px;border:1.5px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink);font:600 20px var(--font);padding:0 16px;outline:none}
+.thread{display:flex;flex-direction:column;gap:10px}
+.msg.kid{align-self:flex-end;max-width:88%;min-height:56px;background:linear-gradient(135deg,var(--coral),#FF8E5E);color:#fff;border-radius:24px 24px 6px 24px;padding:14px 18px;font-size:19px;font-weight:600;line-height:1.4;box-shadow:0 14px 30px -16px rgba(255,107,74,.8);transition:opacity .2s}
+html[dir="rtl"] .msg.kid{border-radius:24px 24px 24px 6px}
+.msg.kid.empty{background:rgba(255,255,255,.04);border:1.5px dashed var(--line);color:var(--soft);box-shadow:none;font-weight:500}
+.msg.kid .interim{opacity:.65}
+.msg.kid .caret{display:none;width:3px;height:1.1em;background:#fff;vertical-align:-3px;margin-inline-start:3px;border-radius:2px;animation:blink 1s steps(2) infinite}
+.msg.kid.live .caret{display:inline-block}
+@keyframes blink{50%{opacity:0}}
+.talkbar{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:6px}
+.mic{position:relative}
+.mic .ring{position:absolute;inset:-8px;border-radius:50%;border:3px solid rgba(255,107,74,.55);transform:scale(var(--lv,1));transition:transform .08s linear;pointer-events:none;opacity:0}
+.mic.on .ring{opacity:1}
+.mic.on{background:radial-gradient(circle at 35% 30%,#FFB199,#FF5A36)}
+.mic.busy{opacity:.6}
+.bars{display:flex;gap:5px;height:28px;align-items:center;opacity:0;transition:opacity .2s}
+.bars.on{opacity:1}
+.bars i{display:block;width:6px;border-radius:3px;background:var(--coral);height:6px;transition:height .08s linear}
+.linkbtn{background:none;border:0;color:var(--soft);font:600 15px var(--font);cursor:pointer;padding:8px;text-decoration:underline;text-underline-offset:4px}
+.again{display:none}
 /* picture */
 .pic{border-radius:28px;overflow:hidden;position:relative;background:var(--bg2);aspect-ratio:1/1;box-shadow:0 30px 60px -30px rgba(0,0,0,.8)}
 .pic img{width:100%;height:100%;object-fit:cover;display:block}
@@ -138,7 +157,7 @@ td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:start;verti
 <div id="app"></div>
 <audio id="voice" playsinline preload="auto"></audio>
 <script>
-var VERSION="15";
+var VERSION="16";
 /* ---------- words ---------- */
 // he: string, or [girl, boy] when it changes with the child's gender. Bolt herself is always female.
 var W={
@@ -172,6 +191,10 @@ var W={
  ask_free:{en:"What should I draw? Tell me as much as you can.",he:["מה לצייר? ספרי לי כמה שיותר.","מה לצייר? ספר לי כמה שיותר."]},
  tapTalk:{en:"Tap and talk",he:["לחצי ודברי","לחץ ודבר"]},
  listening:{en:"Listening... tap again when you finish",he:["מקשיבה... לחצי שוב כשסיימת","מקשיבה... לחץ שוב כשסיימת"]},
+ sayIt:{en:"Your words will show up here as you talk",he:["המילים שלך יופיעו כאן בזמן שאת מדברת","המילים שלך יופיעו כאן בזמן שאתה מדבר"]},
+ typeInstead:{en:"Type instead",he:["להקליד במקום","להקליד במקום"]},
+ sayAgain:{en:"Say it again",he:"להגיד שוב"},
+ checkHeard:{en:"Did I hear you right? Tap Send, or say it again.",he:["שמעתי נכון? לחצי לשלוח, או תגידי שוב.","שמעתי נכון? לחץ לשלוח, או תגיד שוב."]},
  hearing:{en:"Bolt is listening to what you said...",he:"בולט מקשיבה למה שאמרת..."},
  notHeard:{en:"I didn't catch that. Try again, a bit louder.",he:"לא שמעתי טוב. ננסה שוב, קצת יותר חזק?"},
  micBlocked:{en:"I can't use the microphone. Allow it in the browser, or type instead.",he:"אין לי גישה למיקרופון. צריך לאשר אותו בדפדפן, או לכתוב."},
@@ -271,47 +294,77 @@ function deviceSay(text){return new Promise(function(res){try{var u=new SpeechSy
 function warm(list){if(!S.api)return;list.forEach(function(x){var key=S.lang+"|"+x;if(VCACHE[key])return;fetch(S.api+"/api/speak",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:x,lang:S.lang})}).then(function(r){return r.ok?r.blob():null}).then(function(b){if(b)VCACHE[key]=URL.createObjectURL(b)}).catch(function(){})})}
 
 /* ---------- listening ---------- */
-var REC=null;
-// Bolt hears through the phone's microphone and her own speech-to-text, so it works in every browser and in-app browser.
-function canRecord(){return !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder)}
+var REC=null,SDKP=null,TOKEN=null;
+function canRecord(){return !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)}
 function canListen(){return canRecord()||!!(window.SpeechRecognition||window.webkitSpeechRecognition)}
-function listen(btn,box,label,onText){
+function loadSDK(){if(window.SpeechSDK)return Promise.resolve(window.SpeechSDK);if(SDKP)return SDKP;SDKP=new Promise(function(res,rej){var sc=document.createElement("script");sc.src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@1.52.0/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js";sc.onload=function(){window.SpeechSDK?res(window.SpeechSDK):rej()};sc.onerror=function(){SDKP=null;rej()};document.head.appendChild(sc)});return SDKP}
+function getToken(){if(TOKEN&&Date.now()-TOKEN.at<8*60000)return Promise.resolve(TOKEN);return api("/api/listen-token",{}).then(function(j){TOKEN={token:j.token,region:j.region,at:Date.now()};return TOKEN})}
+function warmListen(){if(!S.api||!canRecord())return;loadSDK().catch(function(){});getToken().catch(function(){})}
+// Sound level -> ring and bars, so the child can see Bolt is hearing her.
+function meter(stream,ui){try{var C=window.AudioContext||window.webkitAudioContext,ctx=new C(),src=ctx.createMediaStreamSource(stream),an=ctx.createAnalyser();an.fftSize=512;src.connect(an);var buf=new Uint8Array(an.fftSize),run=true,bars=ui.bars?ui.bars.querySelectorAll("i"):[];
+ (function tick(){if(!run)return;an.getByteTimeDomainData(buf);var sum=0;for(var i=0;i<buf.length;i++){var v=(buf[i]-128)/128;sum+=v*v}var rms=Math.min(1,Math.sqrt(sum/buf.length)*4);ui.ring&&ui.ring.style.setProperty("--lv",(1+rms*.45).toFixed(3));for(var j=0;j<bars.length;j++)bars[j].style.height=(6+rms*22*(0.6+0.4*Math.sin(Date.now()/90+j*1.7)))+"px";requestAnimationFrame(tick)})();
+ return function(){run=false;try{ctx.close()}catch(e){}}}catch(e){return function(){}}}
+// One tap starts, one tap finishes. Words appear live in the child's bubble.
+function listen(ui,onDone){
  if(REC){REC.stop();return}
  stopVoice();
- if(!canRecord()||!S.api)return listenDevice(btn,box,label,onText);
- navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}}).then(function(stream){
-  var mime=["audio/webm;codecs=opus","audio/webm","audio/mp4","audio/ogg"].filter(function(m){return MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m)})[0]||"";
-  var rec=new MediaRecorder(stream,mime?{mimeType:mime}:{}),parts=[],timer;
+ if(!canRecord()||!S.api)return listenDevice(ui,onDone);
+ var base=ui.get();
+ navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}).then(function(stream){
+  var stopMeter=meter(stream,ui),finished=false;
+  function cleanup(){stopMeter();stream.getTracks().forEach(function(tr){tr.stop()});REC=null;ui.state("idle")}
+  ui.state("live");
+  Promise.all([loadSDK(),getToken()]).then(function(x){
+   var SDK=x[0],tk=x[1],cfg=SDK.SpeechConfig.fromAuthorizationToken(tk.token,tk.region);cfg.speechRecognitionLanguage=S.lang==="he"?"he-IL":"en-US";
+   var rec=new SDK.SpeechRecognizer(cfg,SDK.AudioConfig.fromStreamInput(stream)),finals=[],silence=null;
+   function show(interim){ui.set((base?base+" ":"")+finals.join(" "),interim)}
+   function arm(){clearTimeout(silence);silence=setTimeout(function(){REC&&REC.stop()},finals.length?3500:9000)}
+   rec.recognizing=function(_,e){show(e.result.text);arm()};
+   rec.recognized=function(_,e){if(e.result.reason===SDK.ResultReason.RecognizedSpeech&&e.result.text){finals.push(e.result.text);show("")}arm()};
+   rec.canceled=function(){REC&&REC.stop()};
+   REC={stop:function(){if(finished)return;finished=true;clearTimeout(silence);ui.state("busy");rec.stopContinuousRecognitionAsync(function(){try{rec.close()}catch(e){}cleanup();show("");onDone&&onDone(ui.get())},function(){cleanup();onDone&&onDone(ui.get())})}};
+   rec.startContinuousRecognitionAsync(function(){arm()},function(){finished=true;cleanup();recordFallback(ui,onDone)});
+  }).catch(function(){cleanup();recordFallback(ui,onDone)});
+ }).catch(function(){toast(t("micBlocked"));listenDevice(ui,onDone)});
+}
+// Backup when live listening cannot connect: record, then Bolt transcribes the whole sentence.
+function recordFallback(ui,onDone){
+ if(!window.MediaRecorder)return listenDevice(ui,onDone);
+ navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+  var mime=["audio/webm;codecs=opus","audio/webm","audio/mp4"].filter(function(m){return MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m)})[0]||"",rec=new MediaRecorder(stream,mime?{mimeType:mime}:{}),parts=[],stopMeter=meter(stream,ui),timer;
   REC={stop:function(){clearTimeout(timer);try{rec.stop()}catch(e){}}};
   rec.ondataavailable=function(e){if(e.data&&e.data.size)parts.push(e.data)};
-  rec.onstop=function(){
-   stream.getTracks().forEach(function(tr){tr.stop()});REC=null;btn.classList.remove("on");
-   var blob=new Blob(parts,{type:rec.mimeType||mime||"audio/webm"});
-   if(blob.size<1500){label.textContent=t("tapTalk");return}
-   label.textContent=t("hearing");btn.disabled=true;
-   blobToData(blob).then(function(d){return api("/api/hear",{audio:d.split(",")[1],lang:S.lang})}).then(function(r){
-    var txt=(r&&r.text||"").trim();btn.disabled=false;label.textContent=t("tapTalk");
-    if(!txt){toast(t("notHeard"));return}
-    if(onText)return onText(txt);
-    box.value=((box.value?box.value.trim()+" ":"")+txt).trim();box.dispatchEvent(new Event("input"));
-   }).catch(function(){btn.disabled=false;label.textContent=t("tapTalk");toast(t("notHeard"))});
-  };
-  rec.start();btn.classList.add("on");label.textContent=t("listening");
-  timer=setTimeout(function(){REC&&REC.stop()},30000);
- }).catch(function(){toast(t("micBlocked"));listenDevice(btn,box,label,onText)});
+  rec.onstop=function(){stopMeter();stream.getTracks().forEach(function(tr){tr.stop()});REC=null;var blob=new Blob(parts,{type:rec.mimeType||mime||"audio/webm"});
+   if(blob.size<1500){ui.state("idle");return}
+   ui.state("busy");ui.set(ui.get(),t("hearing"));
+   blobToData(blob).then(function(d){return api("/api/hear",{audio:d.split(",")[1],lang:S.lang})}).then(function(r){var txt=(r&&r.text||"").trim();ui.state("idle");if(!txt){ui.set(ui.get(),"");toast(t("notHeard"));return}ui.set((ui.get()?ui.get()+" ":"")+txt,"");onDone&&onDone(ui.get())}).catch(function(){ui.state("idle");ui.set(ui.get(),"");toast(t("notHeard"))})};
+  rec.start();ui.state("live");timer=setTimeout(function(){REC&&REC.stop()},30000);
+ }).catch(function(){toast(t("micBlocked"))});
 }
-function listenDevice(btn,box,label,onText){
- var R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){toast(t("micBlocked"));box&&box.focus();return}
- // One phrase per tap. Android repeats earlier words inside later results, so only the newest result is used.
- var r=new R(),base=box&&box.value?box.value.trim()+" ":"";r.lang=S.lang==="he"?"he-IL":"en-US";r.interimResults=true;r.continuous=false;r.maxAlternatives=1;
- REC={stop:function(){try{r.stop()}catch(e){}}};btn.classList.add("on");label.textContent=t("listening");
- r.onresult=function(e){var last=e.results[e.results.length-1],txt=last[0].transcript.trim();if(onText){if(last.isFinal)onText(txt)}else{box.value=(base+txt).trim();box.dispatchEvent(new Event("input"))}};
+function listenDevice(ui,onDone){
+ var R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){toast(t("micBlocked"));return}
+ var r=new R(),base=ui.get();r.lang=S.lang==="he"?"he-IL":"en-US";r.interimResults=true;r.continuous=false;
+ REC={stop:function(){try{r.stop()}catch(e){}}};ui.state("live");
+ r.onresult=function(e){var last=e.results[e.results.length-1];if(last.isFinal)ui.set((base?base+" ":"")+last[0].transcript.trim(),"");else ui.set(base,last[0].transcript)};
  r.onerror=function(e){if(e&&/not-allowed|service-not-allowed|network/.test(e.error))toast(t("micBlocked"))};
- r.onend=function(){REC=null;btn.classList.remove("on");label.textContent=t("tapTalk")};
- try{r.start()}catch(e){REC=null;btn.classList.remove("on");toast(t("micBlocked"))}
+ r.onend=function(){REC=null;ui.state("idle");onDone&&onDone(ui.get())};
+ try{r.start()}catch(e){REC=null;ui.state("idle");toast(t("micBlocked"))}
 }
-function talkBox(placeholder){return '<div class="talkbox">'+(canListen()?'<button class="mic" id="mic" aria-label="'+esc(t("tapTalk"))+'">'+IC.mic+'</button><div class="mic-label" id="micl">'+esc(t("tapTalk"))+'</div>':'')+'<textarea id="box" placeholder="'+esc(placeholder||t("orType"))+'"></textarea></div>'}
-function wireTalk(onChange){var box=$("#box");on("#mic",function(){listen($("#mic"),box,$("#micl"))});box.addEventListener("input",function(){onChange(box.value.trim())})}
+function talkBox(){return '<div class="thread"><div class="msg kid empty" id="kidmsg"><span id="kidtxt">'+esc(t("sayIt"))+'</span><span class="interim" id="kidint"></span><span class="caret"></span></div></div>'+
+ '<div class="talkbar">'+(canListen()?'<button class="mic" id="mic" aria-label="'+esc(t("tapTalk"))+'"><span class="ring"></span>'+IC.mic+'</button><div class="bars" id="bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="mic-label" id="micl">'+esc(t("tapTalk"))+'</div>':'')+
+ '<button class="linkbtn" id="kb">'+esc(t("typeInstead"))+'</button></div><textarea id="box" hidden placeholder="'+esc(t("orType"))+'"></textarea>'}
+function wireTalk(onChange){
+ var box=$("#box"),msg=$("#kidmsg"),txt=$("#kidtxt"),int=$("#kidint"),mic=$("#mic"),lab=$("#micl"),bars=$("#bars");
+ function paint(){var v=box.value.trim();msg.classList.toggle("empty",!v&&!int.textContent);txt.textContent=v||(int.textContent?"":t("sayIt"));onChange(v)}
+ var ui={ring:mic&&mic.querySelector(".ring"),bars:bars,get:function(){return box.value.trim()},
+  set:function(v,interim){box.value=v;int.textContent=interim?((v?" ":"")+interim):"";paint()},
+  state:function(st){if(!mic)return;mic.classList.toggle("on",st==="live");mic.classList.toggle("busy",st==="busy");bars.classList.toggle("on",st==="live");msg.classList.toggle("live",st==="live");lab.textContent=st==="live"?t("listening"):st==="busy"?t("hearing"):t("tapTalk")}};
+ on("#mic",function(){listen(ui,function(v){if(v&&document.body.contains(mic))say(t("checkHeard"))})});
+ on("#kb",function(){box.hidden=!box.hidden;if(!box.hidden)box.focus()});
+ box.addEventListener("input",function(){int.textContent="";paint()});
+ warmListen();
+ return ui;
+}
 
 /* ---------- API ---------- */
 function api(path,body){return fetch(S.api+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(function(r){if(!r.ok)throw new Error(r.status);return path==="/api/draw"?r.blob():r.json()})}
@@ -460,7 +513,7 @@ function nameIt(v){
  S.redraw=null;
  render(bar({})+'<div class="pic"><img alt="" src="'+v.img+'"></div>'+boltLine(t("nameIt"))+'<input type="text" id="nm" maxlength="30" autocomplete="off">'+(canListen()?'<button class="btn ghost" id="micn">'+IC.mic+' '+esc(t("tapTalk"))+'</button>':'')+'<button class="btn primary" id="sv">'+esc(t("save"))+'</button>',function(){
   say(t("nameIt"));var nm=$("#nm");
-  on("#micn",function(){var b=$("#micn"),l=document.createElement("span");listen(b,null,{set textContent(v){b.lastChild.textContent=" "+v}},function(txt){nm.value=txt})});
+  on("#micn",function(){var b=$("#micn");listen({get:function(){return""},set:function(v,i){nm.value=(v+(i?" "+i:"")).trim()},state:function(st){b.classList.toggle("on",st==="live");b.lastChild.textContent=" "+(st==="live"?t("listening"):t("tapTalk"))}})});
   on("#sv",function(){var k=kid(),id="p"+Date.now(),title=nm.value.trim()||t("m_"+S.mission);
    putPic({id:id,kid:S.who,title:title,img:v.img,brief:S.brief,fixes:S.v.filter(function(x){return x.step==="fix"}).map(function(x){return x.said}),versions:S.v.length,mission:S.mission,at:new Date().toISOString()}).then(function(){
     k.pics.push({id:id,title:title,at:new Date().toISOString(),versions:S.v.length});addXP(20);if(k.pics.length>=5)badge("b_five");persist();celebrate(v,title)})})})

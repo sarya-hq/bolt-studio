@@ -20,6 +20,7 @@ jobs:
           curl -sS -m 60 -H "$O" -H "Content-Type: application/json" -X POST "$U/api/draw" -d @draw.json -o pic.jpg -w "status %{http_code} bytes %{size_download} type %{content_type}\n"; head -c 400 pic.jpg | grep -a "error" && exit 1; file pic.jpg
           echo "== speak"
           curl -sS -m 30 -H "$O" -H "Content-Type: application/json" -X POST "$U/api/speak" -d '{"text":"שלום, אני בולט","lang":"he"}' -o s.mp3 -w "status %{http_code} bytes %{size_download} type %{content_type}\n"
+          echo "== live-listening token"; curl -sS -H "$O" -X POST "$U/api/listen-token" -w "\nstatus %{http_code}\n" | cut -c1-40
           echo "== hear (Hebrew speech recorded as phone audio)"
           curl -sS -m 30 -H "$O" -H "Content-Type: application/json" -X POST "$U/api/speak" -d '{"text":"דרקון סגול עם ארבע רגליים וכובע אדום","lang":"he"}' -o q.mp3
           which ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null)
