@@ -183,7 +183,7 @@ td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:start;verti
 <div id="app"></div>
 <audio id="voice" playsinline preload="auto"></audio>
 <script>
-var VERSION="24";
+var VERSION="25";
 /* ---------- words ---------- */
 // he: string, or [girl, boy] when it changes with the child's gender. Bolt herself is always female.
 var W={
@@ -276,6 +276,8 @@ var W={
  starsMsg1:{en:"I had to guess a lot. More details next time!",he:"הייתי צריכה לנחש הרבה. בפעם הבאה יותר פרטים!"},
  back:{en:"Back",he:"חזרה"},
  listen:{en:"Listen",he:"להקשיב"},
+ sendingIn:{en:"Sending to Bolt in",he:"שולחת לבולט בעוד"},
+ waitChange:{en:"Wait, I want to change it",he:["רגע, אני רוצה לשנות","רגע, אני רוצה לשנות"]},
  readMissions:{en:"Here is what we can make:",he:"זה מה שאפשר להכין:"},
  changePlayer:{en:"Switch player",he:"החלפת שחקן"},
  editKid:{en:"Change age or details",he:"לשנות גיל או פרטים"},
@@ -330,7 +332,7 @@ document.addEventListener("touchstart",unlock,{capture:true,passive:true});docum
 function stopVoice(){speakSeq++;try{AUD.pause()}catch(e){}try{speechSynthesis.cancel()}catch(e){}var f=$("#face");if(f)f.classList.remove("talk")}
 function talking(onoff){var f=$("#face");if(f)f.classList.toggle("talk",onoff)}
 function say(text){
- if(!text)return Promise.resolve();stopVoice();var my=speakSeq,gk=(kid()&&kid().g)||"",key=S.lang+"|"+gk+"|"+text;talking(true);
+ if(!text)return Promise.resolve();if(S.lastSay===text&&Date.now()-S.lastSayAt<3000&&!AUD.paused)return Promise.resolve();S.lastSay=text;S.lastSayAt=Date.now();stopVoice();var my=speakSeq,gk=(kid()&&kid().g)||"",key=S.lang+"|"+gk+"|"+text;talking(true);
  var got=VCACHE[key]?Promise.resolve(VCACHE[key]):(S.api?fetch(S.api+"/api/speak",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:text,lang:S.lang,g:gk})}).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(b){return VCACHE[key]=URL.createObjectURL(b)}):Promise.reject(0));
  return got.then(function(url){if(my!==speakSeq)return;return new Promise(function(res){AUD.onended=AUD.onerror=function(){talking(false);res()};AUD.src=url;var p=AUD.play();if(p&&p.catch)p.catch(function(){talking(false);res()})})})
   .catch(function(){if(my!==speakSeq)return;return deviceSay(text)});
@@ -407,15 +409,31 @@ function listenDevice(ui,onDone){
 function talkBox(){return '<div class="thread"><div class="msg kid empty" id="kidmsg"><span id="kidtxt">'+esc(t("sayIt"))+'</span><span class="interim" id="kidint"></span><span class="caret"></span></div></div>'+
  '<div class="talkbar">'+(canListen()?'<button class="mic" id="mic" aria-label="'+esc(t("tapTalk"))+'"><span class="ring"></span>'+IC.mic+'</button><div class="bars" id="bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="mic-label" id="micl">'+esc(t("tapTalk"))+'</div>':'')+
  '<button class="linkbtn" id="kb">'+esc(t("typeInstead"))+'</button></div><textarea id="box" hidden placeholder="'+esc(t("orType"))+'"></textarea>'}
+// A turn of conversation: Bolt asks out loud, the mic opens by itself, the child talks,
+// and when she stops Bolt takes it after a short countdown that a tap can stop.
+function converse(question,ui,onSend){
+ var send=$("#send"),label=send.textContent,timer=null,n=0;
+ function cancel(){if(timer){clearInterval(timer);timer=null;send.textContent=label;var h=$("#hold");if(h)h.remove()}}
+ function go(){cancel();onSend()}
+ ui.onDone=function(v){if(!v||v.length<3||!document.body.contains(send))return;n=3;send.disabled=false;send.textContent=t("sendingIn")+" "+n;
+  var hold=document.createElement("button");hold.className="linkbtn";hold.id="hold";hold.textContent=t("waitChange");hold.onclick=function(){cancel();say(t("waitChange"))};send.parentNode.insertBefore(hold,send.nextSibling);
+  timer=setInterval(function(){n--;if(n<=0)go();else send.textContent=t("sendingIn")+" "+n},1000)};
+ ui.cancelAuto=cancel;
+ send.addEventListener("click",function(){if(timer){go()}},true);
+ say(question).then(function(){if(!document.body.contains(send)||REC||ui.get())return;
+  var p=navigator.permissions&&navigator.permissions.query?navigator.permissions.query({name:"microphone"}).then(function(r){return r.state}).catch(function(){return"prompt"}):Promise.resolve("prompt");
+  p.then(function(st){if(st!=="denied"&&document.body.contains(send)&&!REC&&canRecord())ui.start()})});
+}
 function wireTalk(onChange){
  var box=$("#box"),msg=$("#kidmsg"),txt=$("#kidtxt"),int=$("#kidint"),mic=$("#mic"),lab=$("#micl"),bars=$("#bars");
  function paint(){var v=box.value.trim();msg.classList.toggle("empty",!v&&!int.textContent);txt.textContent=v||(int.textContent?"":t("sayIt"));onChange(v)}
  var ui={ring:mic&&mic.querySelector(".ring"),bars:bars,get:function(){return box.value.trim()},
   set:function(v,interim){box.value=v;int.textContent=interim?((v?" ":"")+interim):"";paint()},
   state:function(st){if(!mic)return;mic.classList.toggle("on",st==="live");mic.classList.toggle("busy",st==="busy");bars.classList.toggle("on",st==="live");msg.classList.toggle("live",st==="live");lab.textContent=st==="live"?t("listening"):st==="busy"?t("hearing"):t("tapTalk")}};
- on("#mic",function(){listen(ui,function(v){if(v&&document.body.contains(mic))say(t("checkHeard"))})});
- on("#kb",function(){box.hidden=!box.hidden;if(!box.hidden)box.focus()});
- box.addEventListener("input",function(){int.textContent="";paint()});
+ ui.start=function(){ui.cancelAuto&&ui.cancelAuto();listen(ui,function(v){if(!document.body.contains(mic))return;if(ui.onDone)ui.onDone(v);else if(v)say(t("checkHeard"))})};
+ on("#mic",function(){if(REC){REC.stop();return}ui.start()});
+ on("#kb",function(){ui.cancelAuto&&ui.cancelAuto();if(REC)REC.stop();box.hidden=!box.hidden;if(!box.hidden)box.focus()});
+ box.addEventListener("input",function(){ui.cancelAuto&&ui.cancelAuto();int.textContent="";paint()});
  warmListen();
  return ui;
 }
@@ -447,7 +465,7 @@ function home(){
   (S.api?'':'<div class="offline">'+esc(t("offline"))+'</div>')+
   '<h2>'+esc(t("who"))+'</h2><div class="stack">'+names.sort(function(a,b){return a===S.who?-1:b===S.who?1:0}).map(function(n){var k=KIDS[n],info=(k.age?k.age+" · ":"")+(k.g==="f"?W.girl[S.lang]:k.g==="m"?W.boy[S.lang]:"");return '<div class="row" style="gap:8px;align-items:stretch"><button class="kidchip" style="flex:1" data-kid="'+esc(n)+'"><span class="av">'+esc(n.charAt(0))+'</span><span style="flex:1">'+esc(n)+'</span><span class="small">'+esc(info)+'</span></button><button class="iconbtn" style="height:auto;border-radius:22px;flex:0 0 56px" data-edit="'+esc(n)+'" aria-label="'+esc(t("editKid"))+'">✎</button></div>'}).join("")+
   '<button class="btn primary" id="new">'+esc(t("newKid"))+'</button></div>',
-  function(){onAll("[data-kid]",function(el){S.who=el.getAttribute("data-kid");save("bw.who",S.who);say(S.who);var k=kid();if(!k.g)return askGender();if(!k.age)return askAge();hub()});on("#new",newKid);on("#gear",gate);
+  function(){onAll("[data-kid]",function(el){S.who=el.getAttribute("data-kid");save("bw.who",S.who);var k=kid();if(!k.g)return askGender();if(!k.age)return askAge();hub()});on("#new",newKid);on("#gear",gate);
    onAll("[data-edit]",function(el){S.who=el.getAttribute("data-edit");save("bw.who",S.who);say(t("editKid"));askGender()})});
 }
 function newKid(){
@@ -493,9 +511,10 @@ function brief(){
  S.redraw=brief;S.v=[];S.earned=0;S.newBadges=[];S.levelUp="";S.asked=false;
  var q=t("ask_"+S.mission);
  render(bar({back:true,title:'<span class="over">'+esc(t("m_"+S.mission))+'</span>'})+boltLine(q)+talkBox()+'<button class="btn primary" id="send" disabled>'+esc(t("send"))+'</button>',function(){
-  on("#back",hub);say(q);
-  wireTalk(function(v){$("#send").disabled=v.length<3});
-  on("#send",function(){S.brief=$("#box").value.trim();if(REC)try{REC.stop()}catch(e){}addXP(10);run("brief",S.brief)})})
+  on("#back",hub);
+  var ui=wireTalk(function(v){$("#send").disabled=v.length<3});
+  function send(){S.brief=$("#box").value.trim();if(!S.brief)return;if(REC)try{REC.stop()}catch(e){}addXP(10);run("brief",S.brief)}
+  on("#send",send);converse(q,ui,send)})
 }
 var HMM={en:["Hmm, let me think about that.","Ooh, okay. Thinking...","Got it. Let me picture it."],he:["הממ, רגע, אני חושבת.","אוקיי, אני חושבת על זה.","הבנתי. רגע, אני מדמיינת את זה."]};
 function thinking(label,quiet){S.redraw=null;if(!quiet){var h=HMM[S.lang];setTimeout(function(){say(h[Math.floor(Math.random()*h.length)])},50)}render('<div class="think"><div class="orb"><img src="assets/bolt-face.jpg" alt=""></div><h2>'+esc(label)+'</h2><div class="dots"><span></span><span></span><span></span></div></div>');S.slowT=setTimeout(function(){var h2=document.querySelector('.think h2');if(h2){h2.textContent=t('slow');say(t('slow'))}},14000)}
@@ -515,8 +534,9 @@ function run(step,text){
 function clarify(question){
  S.redraw=null;
  render(bar({back:true})+boltLine(question)+talkBox()+'<button class="btn primary" id="send" disabled>'+esc(t("send"))+'</button>',function(){
-  on("#back",brief);say(question);wireTalk(function(v){$("#send").disabled=!v});
-  on("#send",function(){S.brief=S.brief+". "+$("#box").value.trim();if(REC)try{REC.stop()}catch(e){}run("brief",S.brief)})})
+  on("#back",brief);var ui=wireTalk(function(v){$("#send").disabled=v.length<2});
+  function send(){var x=$("#box").value.trim();if(!x)return;S.brief=S.brief+". "+x;if(REC)try{REC.stop()}catch(e){}run("brief",S.brief)}
+  on("#send",send);converse(question,ui,send)})
 }
 function offerRule(r,next){
  S.redraw=null;
@@ -550,8 +570,9 @@ function result(){
 function fix(){
  S.redraw=fix;var v=S.v[S.v.length-1];
  render(bar({back:true})+'<div class="stagepic" style="flex:0 1 30vh"><img alt="" src="'+v.img+'"></div>'+boltMini(t("whatFix"))+talkBox()+'<div class="actions"><button class="btn primary" id="send" disabled>'+esc(t("send"))+'</button></div>',function(){
-  on("#back",result);say(t("whatFix"));wireTalk(function(x){$("#send").disabled=x.length<3});
-  on("#send",function(){var x=$("#box").value.trim();if(REC)try{REC.stop()}catch(e){}addXP(15);badge("b_eye");run("fix",x)})},"stage")
+  on("#back",result);var ui=wireTalk(function(x){$("#send").disabled=x.length<3});
+  function send(){var x=$("#box").value.trim();if(!x)return;if(REC)try{REC.stop()}catch(e){}addXP(15);badge("b_eye");run("fix",x)}
+  on("#send",send);converse(t("whatFix"),ui,send)},"stage")
 }
 // Before / after: tap a side, tap the picture, or swipe. No slider, so no left-right confusion in Hebrew.
 function compare(){
@@ -629,7 +650,7 @@ function confetti(){var c=document.createElement("canvas");c.className="confetti
 })();
 </script>
 <script>
-if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});var _r=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(_r)return;_r=true;location.reload()})}
+if("serviceWorker" in navigator){var _had=!!navigator.serviceWorker.controller;navigator.serviceWorker.register("sw.js").catch(function(){});var _r=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(_r||!_had)return;try{stopVoice()}catch(e){}_r=true;location.reload()})}
 </script>
 </body>
 </html>
