@@ -186,7 +186,7 @@ td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:start;verti
 <div id="app"></div>
 <audio id="voice" playsinline preload="auto"></audio>
 <script>
-var VERSION="26";
+var VERSION="27";
 /* ---------- words ---------- */
 // he: string, or [girl, boy] when it changes with the child's gender. Bolt herself is always female.
 var W={
@@ -259,6 +259,8 @@ var W={
  before:{en:"Before",he:"לפני"}, after:{en:"After",he:"אחרי"},
  pickBefore:{en:"Before is better",he:"לפני יותר טוב"}, pickAfter:{en:"After is better",he:"אחרי יותר טוב"},
  fixAgain:{en:"Fix more",he:"לתקן עוד"},
+ keepImproving:{en:"Make it even better",he:"לשפר עוד את הציור"},
+ improveThis:{en:"Improve this picture",he:"לשפר את הציור הזה"},
  nameIt:{en:"Give it a name!",he:["תני לזה שם!","תן לזה שם!"]},
  save:{en:"Save to my gallery",he:"לשמור בגלריה"},
  saved:{en:"Saved! You led Bolt like a pro.",he:["נשמר! הובלת את בולט כמו מקצוענית.","נשמר! הובלת את בולט כמו מקצוען."]},
@@ -540,7 +542,7 @@ function hub(){
   });
 }
 function brief(){
- S.redraw=brief;S.v=[];S.earned=0;S.newBadges=[];S.levelUp="";S.asked=false;
+ S.redraw=brief;S.v=[];S.savedId=null;S.savedTitle="";S.earned=0;S.newBadges=[];S.levelUp="";S.asked=false;
  var q=t("ask_"+S.mission);
  render(bar({back:true,title:'<span class="over">'+esc(t("m_"+S.mission))+'</span>'})+boltLine(q)+talkBox()+'<button class="btn primary" id="send" disabled>'+esc(t("send"))+'</button>',function(){
   on("#back",hub);
@@ -612,7 +614,7 @@ function compare(){
  render(bar({back:true})+'<div class="stagepic" id="cmp"><img alt="" id="ia" class="hide" src="'+a.img+'"><img alt="" id="ib" src="'+b.img+'"><span class="tag" id="cl">'+esc(t("after"))+'</span></div>'+
   '<div class="toggle"><button id="tb" aria-pressed="false">'+esc(t("before"))+'</button><button id="ta" aria-pressed="true">'+esc(t("after"))+'</button></div>'+
   boltMini(b.bolt)+chipRow(b)+'<div class="ask">'+esc(t("which"))+'</div><div class="actions"><button class="btn ghost" id="pa">'+esc(t("pickBefore"))+'</button><button class="btn mint" id="pb">'+esc(t("pickAfter"))+'</button></div>'+
-  (S.v.length<4?'<button class="linkbtn" id="more" style="flex:0 0 auto">'+esc(t("fixAgain"))+'</button>':''),function(){
+  (S.v.length<12?'<button class="linkbtn" id="more" style="flex:0 0 auto">'+esc(t("fixAgain"))+'</button>':''),function(){
   var showingAfter=true;
   function show(after){showingAfter=after;$("#ib").classList.toggle("hide",!after);$("#ia").classList.toggle("hide",after);$("#cl").textContent=after?t("after"):t("before");$("#ta").setAttribute("aria-pressed",after);$("#tb").setAttribute("aria-pressed",!after)}
   on("#tb",function(){show(false);say(t("before"))});on("#ta",function(){show(true);say(t("after"))});
@@ -626,25 +628,36 @@ function compare(){
 }
 function nameIt(v){
  S.redraw=null;
- render(bar({})+'<div class="pic"><img alt="" src="'+v.img+'"></div>'+boltLine(t("nameIt"))+'<input type="text" id="nm" maxlength="30" autocomplete="off">'+(canListen()?'<button class="btn ghost" id="micn">'+IC.mic+' '+esc(t("tapName"))+'</button>':'')+'<button class="btn primary" id="sv">'+esc(t("save"))+'</button>',function(){
+ render(bar({back:true})+'<div class="pic"><img alt="" src="'+v.img+'"></div>'+boltLine(t("nameIt"))+'<input type="text" id="nm" maxlength="30" autocomplete="off" value="'+esc(S.savedTitle||"")+'">'+(canListen()?'<button class="btn ghost" id="micn">'+IC.mic+' '+esc(t("tapName"))+'</button>':'')+'<button class="btn primary" id="sv">'+esc(t("save"))+'</button><button class="btn ghost" id="better">'+esc(t("keepImproving"))+'</button>',function(){
   say(t("nameIt"));var nm=$("#nm");
+  // Changed her mind: back to the picture, nothing lost.
+  on("#back",function(){S.v.length>1?compare():result()});
+  on("#better",function(){say(t("keepImproving"));improve(v)});
   on("#micn",function(){var b=$("#micn");listen({get:function(){return""},set:function(v,i){nm.value=(v+(i?" "+i:"")).trim()},state:function(st){b.classList.toggle("on",st==="live");b.lastChild.textContent=" "+(st==="live"?t("listeningTap"):t("tapName"))}})});
-  on("#sv",function(){var k=kid(),id="p"+Date.now(),title=nm.value.trim()||t("m_"+S.mission);
-   putPic({id:id,kid:S.who,title:title,img:v.img,brief:S.brief,fixes:S.v.filter(function(x){return x.step==="fix"}).map(function(x){return x.said}),versions:S.v.length,mission:S.mission,at:new Date().toISOString()}).then(function(){
-    k.pics.push({id:id,title:title,at:new Date().toISOString(),versions:S.v.length});addXP(20);if(k.pics.length>=5)badge("b_five");persist();celebrate(v,title)})})})
+  on("#sv",function(){var k=kid(),again=!!S.savedId,id=S.savedId||"p"+Date.now(),title=nm.value.trim()||t("m_"+S.mission),at=new Date().toISOString();
+   putPic({id:id,kid:S.who,title:title,img:v.img,brief:S.brief,fixes:S.v.filter(function(x){return x.step==="fix"}).map(function(x){return x.said}),versions:S.v.length,mission:S.mission,at:at,
+    understood:v.understood||[],prompt:v.prompt||"",left_out:v.left_out||[],stars:v.stars,tip:v.tip||"",bolt:v.bolt||""}).then(function(){
+    var row=again&&k.pics.filter(function(p){return p.id===id})[0];
+    if(row){row.title=title;row.at=at;row.versions=S.v.length;addXP(10)}
+    else{k.pics.push({id:id,title:title,at:at,versions:S.v.length});addXP(20);if(k.pics.length>=5)badge("b_five")}
+    S.savedId=id;S.savedTitle=title;persist();celebrate(v,title)})})})
 }
+// Keep working on a picture after choosing or saving it. The chosen version becomes the one to fix.
+function improve(v){if(S.v[S.v.length-1]!==v)S.v.push(Object.assign({},v,{step:v.step||"brief"}));fix()}
 function celebrate(v,title){
  S.redraw=null;var k=kid();
  var lines=[t("saved")];if(S.levelUp)lines.push(t("levelUp",{l:S.levelUp}));
  render('<div class="pic reveal"><img alt="" src="'+v.img+'"><span class="tag">'+esc(title)+'</span></div>'+boltLine(lines.join(" "))+
   '<div class="card"><div class="over" style="margin-bottom:6px">'+esc(t("earned"))+'</div><h1>+'+(S.earned||0)+' XP</h1></div>'+xpBar()+
   (S.newBadges||[]).map(function(b){return '<div class="badge"><span class="b">🏅</span><span>'+esc(t("newBadge"))+'<br>'+esc(badgeText(b))+'</span></div>'}).join("")+
-  '<div class="row"><button class="btn primary" id="again">'+esc(t("again"))+'</button><button class="btn ghost" id="hm">'+esc(t("home"))+'</button></div>',function(){
-  confetti();say(lines.join(" "));on("#again",brief);on("#hm",hub)})
+  '<button class="btn mint" id="better">'+esc(t("keepImproving"))+'</button><div class="row"><button class="btn primary" id="again">'+esc(t("again"))+'</button><button class="btn ghost" id="hm">'+esc(t("home"))+'</button></div>',function(){
+  confetti();say(lines.join(" "));on("#again",brief);on("#hm",hub);on("#better",function(){say(t("keepImproving"));improve(v)})})
 }
 function viewPic(rec){
  S.redraw=null;
- render(bar({back:true})+'<div class="pic"><img alt="" src="'+rec.img+'"><span class="tag">'+esc(rec.title)+'</span></div><div class="card"><p class="small">'+esc(t("said"))+'</p><p>'+esc(rec.brief)+'</p>'+(rec.fixes&&rec.fixes.length?'<p class="small" style="margin-top:10px">'+esc(t("fixIt"))+'</p>'+rec.fixes.map(function(f){return '<p>• '+esc(f)+'</p>'}).join(""):'')+'</div>',function(){on("#back",hub);say(rec.title)})
+ render(bar({back:true})+'<div class="pic"><img alt="" src="'+rec.img+'"><span class="tag">'+esc(rec.title)+'</span></div><div class="card"><p class="small">'+esc(t("said"))+'</p><p>'+esc(rec.brief)+'</p>'+(rec.fixes&&rec.fixes.length?'<p class="small" style="margin-top:10px">'+esc(t("fixIt"))+'</p>'+rec.fixes.map(function(f){return '<p>• '+esc(f)+'</p>'}).join(""):'')+'</div><button class="btn primary" id="better">'+esc(t("improveThis"))+'</button>',function(){on("#back",hub);say(rec.title);
+  on("#better",function(){say(t("improveThis"));S.mission=rec.mission||"free";S.brief=rec.brief||"";S.savedId=rec.id;S.savedTitle=rec.title;S.earned=0;S.newBadges=[];S.levelUp="";S.asked=true;
+   S.v=[{img:rec.img,understood:rec.understood||[],left_out:rec.left_out||[],prompt:rec.prompt||rec.brief||"",said:rec.brief||"",stars:rec.stars||2,bolt:rec.bolt||rec.title,tip:rec.tip||"",applied:[],step:"brief"}];fix()})})
 }
 function rulebook(){
  S.redraw=rulebook;var k=kid();
