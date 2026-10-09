@@ -25,7 +25,7 @@ jobs:
           curl -sS -m 30 -H "$O" -H "Content-Type: application/json" -X POST "$U/api/speak" -d '{"text":"דרקון סגול עם ארבע רגליים וכובע אדום","lang":"he"}' -o q.mp3
           which ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null)
           ffmpeg -loglevel error -y -i q.mp3 -c:a libopus q.webm
-          python3 -c "import base64,json;print(json.dumps({'audio':base64.b64encode(open('q.webm','rb').read()).decode(),'lang':'he','prompt':'ספרי לי על היצור שלך. איך הוא נראה?'}))" > hear.json
+          python3 -c "import base64,json;print(json.dumps({'audio':base64.b64encode(open('q.webm','rb').read()).decode(),'lang':'he','mime':'audio/webm','prompt':'ספרי לי על היצור שלך. איך הוא נראה?'}))" > hear.json
           curl -sS -m 60 -H "$O" -H "Content-Type: application/json" -X POST "$U/api/hear" -d @hear.json -w "\nstatus %{http_code}\n"
           echo "== think (English, boy, 10, fix)"
           curl -sS -m 60 -H "$O" -H "Content-Type: application/json" -X POST "$U/api/think" \

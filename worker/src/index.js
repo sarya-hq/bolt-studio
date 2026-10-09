@@ -238,13 +238,29 @@ export default {
       }
       if (url.pathname === "/api/hear" && req.method === "POST") {
         const b = await req.json();
-        if (!b.audio || b.audio.length > 4_000_000) return json(req, { error: "no audio" }, 400);
-        const base = { audio: b.audio, language: b.lang === "he" ? "he" : "en", vad_filter: true };
+        if (!b.audio || b.audio.length > 6_000_000) return json(req, { error: "no audio" }, 400);
+        const lang = b.lang === "he" ? "he" : "en";
+        // ElevenLabs Scribe first: it holds up best on children's speech and Hebrew. Whisper is the backup.
+        if (env.ELEVENLABS_API_KEY) {
+          try {
+            const bytes = Uint8Array.from(atob(b.audio), (c) => c.charCodeAt(0));
+            const type = /^audio\/[a-z0-9.+-]+/i.test(b.mime || "") ? b.mime.split(";")[0] : "audio/webm";
+            const fd = new FormData();
+            fd.append("file", new Blob([bytes], { type }), "speech." + (type.includes("mp4") ? "mp4" : "webm"));
+            fd.append("model_id", "scribe_v1");
+            fd.append("language_code", lang);
+            fd.append("tag_audio_events", "false");
+            const r = await fetch("https://api.elevenlabs.io/v1/speech-to-text", { method: "POST", headers: { "xi-api-key": env.ELEVENLABS_API_KEY }, body: fd });
+            if (r.ok) { const j = await r.json(); const text = clip(j && j.text, 600).trim(); if (text) return json(req, { text, via: "scribe" }); }
+            else console.log("scribe", r.status, (await r.text()).slice(0, 200));
+          } catch (e) { console.log("scribe error", e && e.message); }
+        }
+        const base = { audio: b.audio, language: lang, vad_filter: true };
         // The question Bolt just asked steers the listener toward the words a child is likely to use.
         let out;
         try { out = await env.AI.run("@cf/openai/whisper-large-v3-turbo", b.prompt ? { ...base, initial_prompt: clip(b.prompt, 300) } : base); }
         catch (e) { out = await env.AI.run("@cf/openai/whisper-large-v3-turbo", base); }
-        return json(req, { text: clip(out && out.text, 600).trim() });
+        return json(req, { text: clip(out && out.text, 600).trim(), via: "whisper" });
       }
       if (url.pathname === "/api/speak" && req.method === "POST") {
         const b = await req.json();
